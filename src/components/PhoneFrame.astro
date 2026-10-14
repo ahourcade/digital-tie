@@ -1,0 +1,53 @@
+---
+/**
+ * Captura vertical de Instagram dentro de un marco de teléfono mínimo.
+ * Conserva la proporción original (738×1600) y abre el lightbox a resolución real.
+ */
+import { Image, getImage } from 'astro:assets';
+import { img, widthsFor } from '../lib/images';
+import { postById, BRANDS } from '../data/posts';
+interface Props { src: string; alt: string; postId?: string; group?: string; showMeta?: boolean; sizes?: string; tone?: 'light' | 'dark'; priority?: boolean }
+const { src, alt, postId, group = 'social', showMeta = true, sizes = '(min-width: 1024px) 22vw, (min-width: 640px) 40vw, 70vw', tone = 'light', priority = false } = Astro.props;
+const meta = img(src);
+const full = await getImage({ src: meta, width: meta.width, format: 'webp', quality: 88 });
+const post = postId ? postById(postId) : undefined;
+const brand = post ? BRANDS[post.brand] : undefined;
+const caption = post
+  ? `${brand!.label} · ${post.format}${post.likes ? ` · ${post.likes} Me gusta` : ''}${post.comments ? ` · ${post.comments} comentarios` : ''} (captura de la publicación)`
+  : alt;
+---
+<figure class:list={['phone', `tone-${tone}`]}>
+  <button type="button" class="device" data-lightbox data-group={group} data-src={full.src} data-w={meta.width} data-h={meta.height} data-alt={alt} data-caption={caption} aria-label={`Ampliar: ${alt}`}>
+    <Image src={meta} alt={alt} widths={widthsFor(meta, [240, 360, 480, 600])} sizes={sizes} format="webp" quality={80} loading={priority ? 'eager' : 'lazy'} />
+  </button>
+  {showMeta && post && (
+    <figcaption>
+      <span class="who">{brand!.label} <span class="fmt">· {post.format}</span></span>
+      {(post.likes || post.comments) && (
+        <span class="metrics num">
+          {post.likes && <span><strong>{post.likes}</strong> Me gusta</span>}
+          {post.comments && <span><strong>{post.comments}</strong> comentarios</span>}
+        </span>
+      )}
+      {post.note && <span class="note">{post.note}</span>}
+    </figcaption>
+  )}
+</figure>
+<style>
+  .phone { margin: 0; display: grid; gap: 12px; }
+  .device {
+    display: block; width: 100%; padding: 6px; border: 0; border-radius: 26px; background: #0a0f18;
+    box-shadow: 0 0 0 1px rgba(12,21,37,.12), 0 18px 40px -18px rgba(12,21,37,.45);
+    transition: transform var(--t) var(--ease), box-shadow var(--t) var(--ease);
+  }
+  .tone-dark .device { box-shadow: 0 0 0 1px rgba(255,255,255,.12), 0 18px 40px -18px rgba(0,0,0,.6); }
+  .device :global(img) { width: 100%; height: auto; aspect-ratio: 738 / 1600; border-radius: 20px; object-fit: cover; }
+  .device:hover { transform: translateY(-3px); }
+  @media (prefers-reduced-motion: reduce) { .device:hover { transform: none; } }
+  figcaption { display: grid; gap: 2px; font-size: .875rem; line-height: 1.4; }
+  .who { font-weight: 700; }
+  .fmt { font-weight: 500; color: var(--fg-muted); }
+  .metrics { display: flex; flex-wrap: wrap; gap: 4px 12px; color: var(--fg-muted); }
+  .metrics strong { color: var(--fg); font-weight: 700; }
+  .note { color: var(--fg-muted); font-size: .8125rem; }
+</style>

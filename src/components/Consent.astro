@@ -1,0 +1,44 @@
+---
+/** Solo se renderiza si PUBLIC_GTM_ID está configurado. GTM se carga únicamente con consentimiento. */
+interface Props { gtmId: string }
+const { gtmId } = Astro.props;
+---
+<div class="consent surface-dark" data-consent data-gtm={gtmId} hidden role="region" aria-label="Preferencias de cookies">
+  <p class="small">Usamos cookies de medición para entender cómo se usa el sitio. Podés aceptarlas o rechazarlas. <a href="/privacidad/">Más información</a>.</p>
+  <div class="actions">
+    <button type="button" class="btn btn--ghost" data-consent-no>Rechazar</button>
+    <button type="button" class="btn" data-consent-yes>Aceptar</button>
+  </div>
+</div>
+<style>
+  .consent {
+    position: fixed; z-index: 60; left: 12px; right: 12px; bottom: 12px; max-width: 560px;
+    padding: 16px 18px; border-radius: var(--radius-lg); display: grid; gap: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,.25);
+  }
+  .consent[hidden] { display: none; }
+  .actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .actions .btn { min-height: 44px; padding: .5em 1.1em; font-size: .9375rem; }
+</style>
+<script>
+  const el = document.querySelector<HTMLElement>('[data-consent]');
+  if (el) {
+    const KEY = 'dt-consent';
+    const get = () => { try { return localStorage.getItem(KEY); } catch { return null; } };
+    const set = (v: string) => { try { localStorage.setItem(KEY, v); } catch { /* sin storage */ } };
+    const load = () => {
+      const id = el.dataset.gtm;
+      if (!id || (window as any).__gtmLoaded) return;
+      (window as any).__gtmLoaded = true;
+      window.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
+      const s = document.createElement('script');
+      s.async = true; s.src = `https://www.googletagmanager.com/gtm.js?id=${encodeURIComponent(id)}`;
+      document.head.appendChild(s);
+    };
+    const v = get();
+    if (v === 'yes') load();
+    else if (v !== 'no') el.hidden = false;
+    el.querySelector('[data-consent-yes]')?.addEventListener('click', () => { set('yes'); el.hidden = true; load(); });
+    el.querySelector('[data-consent-no]')?.addEventListener('click', () => { set('no'); el.hidden = true; });
+  }
+</script>

@@ -1,0 +1,45 @@
+---
+/**
+ * Captura completa de un sitio en un marco de navegador mínimo, con scroll interno
+ * (no se miniaturiza hasta volverse ilegible) y botón para verla ampliada.
+ */
+import { Image, getImage } from 'astro:assets';
+import { img, widthsFor } from '../lib/images';
+interface Props { src: string; alt: string; url?: string; caption?: string; group?: string; height?: string }
+const { src, alt, url, caption, group, height = 'min(78vh, 760px)' } = Astro.props;
+const meta = img(src);
+const full = await getImage({ src: meta, width: meta.width, format: 'webp', quality: 90 });
+---
+<figure class="browser" style={`--h:${height};--nat:${meta.width}px`}>
+  <div class="chrome" aria-hidden="true">
+    <span class="dots"><i></i><i></i><i></i></span>
+    {url && <span class="url">{url}</span>}
+  </div>
+  <div class="viewport" tabindex="0" role="region" aria-label={`${alt} (desplazable)`}>
+    <span class="pic"><Image src={meta} alt={alt} widths={widthsFor(meta)} sizes={`(min-width: 1280px) min(${meta.width}px, 860px), 100vw`} format="webp" quality={84} loading="lazy" /></span>
+  </div>
+  <figcaption>
+    <span class="small muted">{caption ?? alt} · {meta.width}×{meta.height}px</span>
+    <button type="button" class="link-arrow" data-lightbox data-group={group} data-src={full.src} data-w={meta.width} data-h={meta.height} data-alt={alt} data-caption={caption ?? alt}>
+      Ver captura completa <span class="arrow" aria-hidden="true">↗</span>
+    </button>
+  </figcaption>
+</figure>
+<style>
+  .browser { margin: 0; display: grid; gap: 14px; }
+  .chrome {
+    display: flex; align-items: center; gap: 14px; height: 38px; padding: 0 14px;
+    background: #fff; border: 1px solid var(--line); border-bottom: 0; border-radius: 10px 10px 0 0;
+  }
+  .dots { display: flex; gap: 6px; }
+  .dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--line-strong); }
+  .url { flex: 1; max-width: 360px; margin-inline: auto; text-align: center; font-size: .75rem; font-weight: 600; color: var(--muted); background: var(--mist); border-radius: 999px; padding: 4px 12px; }
+  .viewport {
+    height: var(--h); overflow-y: auto; overflow-x: hidden; background: var(--mist);
+    border: 1px solid var(--line); border-radius: 0 0 10px 10px; overscroll-behavior: contain;
+  }
+  .viewport .pic { display: block; }
+  .viewport :global(img) { width: 100%; max-width: var(--nat); margin-inline: auto; height: auto; }
+  figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; align-items: center; }
+  figcaption button { background: none; border-top: 0; border-left: 0; border-right: 0; padding: 0 0 2px; color: inherit; font-size: .9375rem; }
+</style>

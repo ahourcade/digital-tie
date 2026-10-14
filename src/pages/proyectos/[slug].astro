@@ -1,0 +1,261 @@
+---
+import Base from '../../layouts/Base.astro';
+import Plate from '../../components/Plate.astro';
+import Figure from '../../components/Figure.astro';
+import BrowserFrame from '../../components/BrowserFrame.astro';
+import PhoneFrame from '../../components/PhoneFrame.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { Image, getImage } from 'astro:assets';
+import { img } from '../../lib/images';
+import { PROJECTS, categoryLabel, relatedProjects, type Project } from '../../data/projects';
+import { postById, BRANDS } from '../../data/posts';
+
+export function getStaticPaths() {
+  return PROJECTS.map((p) => ({ params: { slug: p.slug }, props: { project: p } }));
+}
+interface Props { project: Project }
+const { project: p } = Astro.props;
+
+const webs = p.gallery.filter((g) => g.kind === 'web');
+const images = p.gallery.filter((g) => g.kind === 'image');
+const socials = p.gallery.filter((g) => g.kind === 'social');
+const related = relatedProjects(p, 3);
+const list = PROJECTS.filter((x) => !x.archive || p.archive);
+const next = list[(list.findIndex((x) => x.slug === p.slug) + 1) % list.length];
+const og = await getImage({ src: img(p.cover), width: 1200, height: 630, fit: 'cover', format: 'jpg', quality: 80 });
+const host = (u: string) => u.replace(/^https?:\/\//, '').replace(/\/$/, '');
+const isContent = p.categories.includes('contenidos');
+
+const schema = [{
+  '@context': 'https://schema.org',
+  '@type': 'CreativeWork',
+  name: `${p.client} — ${p.headline}`,
+  description: p.summary,
+  url: new URL(`/proyectos/${p.slug}/`, Astro.site).href,
+  image: new URL(og.src, Astro.site).href,
+  creator: { '@type': 'Organization', name: 'Digital Tie', url: Astro.site?.href },
+  about: p.industry,
+  genre: p.categories.map(categoryLabel),
+  inLanguage: 'es-AR',
+}];
+---
+<Base
+  title={`${p.client} — ${p.headline}`}
+  description={p.seoDescription ?? `${p.summary} Caso de Digital Tie.`}
+  image={og.src}
+  type="article"
+  breadcrumbs={[{ name: 'Proyectos', href: '/proyectos/' }, { name: p.client, href: `/proyectos/${p.slug}/` }]}
+  schema={schema}
+>
+  <article>
+    <header class="head container">
+      <nav class="crumbs small" aria-label="Migas de pan">
+        <ol role="list"><li><a href="/proyectos/">Proyectos</a></li><li aria-current="page">{p.client}</li></ol>
+      </nav>
+      <div class="head-grid">
+        <div class="head-main">
+          {p.logo ? (
+            <div class:list={['client-logo', p.logo.onDark && 'client-logo--dark']}>
+              <Image src={img(p.logo.src)} alt={p.logo.alt} height={56} densities={[1, 2]} loading="eager" />
+            </div>
+          ) : (
+            <p class="label">{p.archive ? 'Archivo' : 'Caso'} · {p.industry}</p>
+          )}
+          <h1 class="h1">{p.client}</h1>
+          <p class="lead">{p.summary}</p>
+        </div>
+        <dl class="facts">
+          <div><dt class="label">Industria</dt><dd>{p.industry}</dd></div>
+          <div><dt class="label">Rol de Digital Tie</dt><dd>{p.role}</dd></div>
+          <div><dt class="label">Disciplinas</dt><dd><ul class="tags" role="list">{p.categories.map((c) => <li class="tag"><a href={`/proyectos/?cat=${c}`}>{categoryLabel(c)}</a></li>)}</ul></dd></div>
+          {(p.link || p.social) && (
+            <div><dt class="label">Enlaces</dt><dd class="links">
+              {p.link && <a class="link-arrow" href={p.link.url} target="_blank" rel="noopener noreferrer">{p.link.label} <span class="arrow" aria-hidden="true">↗</span></a>}
+              {p.social?.map((s) => <a class="link-arrow" href={s.url} target="_blank" rel="noopener noreferrer">{s.label} <span class="arrow" aria-hidden="true">↗</span></a>)}
+            </dd></div>
+          )}
+        </dl>
+      </div>
+    </header>
+
+    <div class="container hero-media">
+      <Plate src={p.cover} alt={p.coverAlt} plate={p.plate} fit={p.coverFit ?? 'contain'} ratio="16 / 9" sizes="(min-width: 1440px) 1312px, 100vw" priority />
+    </div>
+
+    <section class="container story" aria-label="Sobre el proyecto">
+      <div class="story-block">
+        <h2 class="label label--fg">Contexto</h2>
+        <div class="stack prose">{p.context.map((c) => <p>{c}</p>)}</div>
+      </div>
+      <div class="story-block">
+        <h2 class="label label--fg">Qué hicimos</h2>
+        <ol class="deliv" role="list">
+          {p.deliverables.map((d, i) => <li><span class="num label">{String(i + 1).padStart(2, '0')}</span><span>{d}</span></li>)}
+        </ol>
+      </div>
+    </section>
+
+    {webs.length > 0 && (
+      <section class="container block" aria-labelledby="g-web">
+        <h2 class="label label--fg block-title" id="g-web">{webs.length > 1 ? 'Sitios' : p.categories.includes('ecommerce') ? 'La tienda' : 'El sitio'}</h2>
+        <div class="web-list">
+          {webs.map((w) => <BrowserFrame src={w.src} alt={w.alt} caption={w.caption} url={p.link ? host(p.link.url) : undefined} group={`${p.slug}-web`} />)}
+        </div>
+      </section>
+    )}
+
+    {images.length > 0 && (
+      <section class="container block" aria-labelledby="g-img">
+        <h2 class="label label--fg block-title" id="g-img">Piezas del proyecto</h2>
+        <div class:list={['img-grid', images.length === 1 && 'img-grid--one']}>
+          {images.map((g) => <Figure src={g.src} alt={g.alt} caption={g.caption} group={`${p.slug}-img`} plate="mist" sizes={images.length === 1 ? '(min-width: 1024px) 70vw, 100vw' : '(min-width: 1024px) 45vw, 100vw'} />)}
+        </div>
+      </section>
+    )}
+
+    {socials.length > 0 && (
+      <section class="block surface-dark social" aria-labelledby="g-social">
+        <div class="container">
+          <div class="social-head">
+            <h2 class="h2" id="g-social">Contenidos para Instagram</h2>
+            <p class="muted">Capturas originales de publicaciones producidas por Digital Tie. Las métricas son las visibles en cada captura, al momento de tomarla.</p>
+          </div>
+          <ul class="phones" role="list">
+            {socials.map((s) => <li><PhoneFrame src={s.src} alt={s.alt} postId={s.postId} group={`${p.slug}-social`} tone="dark" /></li>)}
+          </ul>
+          <a class="link-arrow on-dark" href="/servicios/produccion-de-contenidos/">Ver el servicio de producción de contenidos <span class="arrow" aria-hidden="true">→</span></a>
+        </div>
+      </section>
+    )}
+
+    {p.subbrands && (
+      <section class="subbrands" aria-label="Submarcas">
+        {p.subbrands.map((b, i) => (
+          <div class="sb" style={`--brand:${b.color}`}>
+            <div class="container">
+              <div class="sb-head">
+                <p class="label num">{String(i + 1).padStart(2, '0')} / {String(p.subbrands!.length).padStart(2, '0')} — Submarca</p>
+                <h2 class="h2">{b.name}</h2>
+                <p class="lead muted">{b.focus}</p>
+              </div>
+              <div class="sb-grid">
+                <div class="sb-copy">
+                  <p>{b.text}</p>
+                  {b.instagram && <a class="link-arrow" href={b.instagram} target="_blank" rel="noopener noreferrer">Ver perfil de Instagram <span class="arrow" aria-hidden="true">↗</span></a>}
+                </div>
+                <Figure src={b.brandImage} alt={`Página del manual de identidad: logotipo de ${b.name}`} caption={`Logotipo de ${b.name} — manual de identidad PRO ATV`} group={`sb-${i}`} plate="white" sizes="(min-width: 1024px) 55vw, 100vw" />
+              </div>
+              {b.profile && (
+                <div class="sb-profile">
+                  <Figure src={b.profile} alt={`Captura del perfil de Instagram de ${b.name}`} caption={`Perfil de Instagram de ${b.name} (captura)`} group={`sb-${i}`} plate="mist" sizes="(min-width: 1024px) 80vw, 100vw" />
+                </div>
+              )}
+              {b.posts && (
+                <ul class="phones phones--light" role="list" aria-label={`Publicaciones de ${b.name}`}>
+                  {b.posts.map((id) => { const post = postById(id); return <li><PhoneFrame src={post.src} alt={`${post.format} de ${BRANDS[post.brand].label}: ${post.hook}`} postId={id} group={`sb-${i}`} /></li>; })}
+                </ul>
+              )}
+              {b.pieces && (
+                <ul class="pieces" role="list" aria-label={`Piezas de ${b.name}`}>
+                  {b.pieces.map((pc) => <li><Figure src={pc.src} alt={pc.alt} group={`sb-${i}`} plate="mist" sizes="(min-width: 1024px) 25vw, 50vw" maxHeight="420px" /></li>)}
+                </ul>
+              )}
+            </div>
+          </div>
+        ))}
+      </section>
+    )}
+
+    <nav class="container next" aria-label="Siguiente proyecto">
+      <a href={`/proyectos/${next.slug}/`} class="next-link">
+        <span class="label">Siguiente proyecto</span>
+        <span class="h2">{next.client} <span class="arrow" aria-hidden="true">→</span></span>
+      </a>
+    </nav>
+
+    {related.length > 0 && (
+      <section class="container block related" aria-labelledby="rel">
+        <h2 class="label label--fg block-title" id="rel">Proyectos relacionados</h2>
+        <ul class="rel-grid" role="list">
+          {related.map((r) => <li><ProjectCard project={r} size="md" /></li>)}
+        </ul>
+      </section>
+    )}
+  </article>
+
+  <CtaBand
+    title={isContent ? '¿Necesitás contenido <em>que se vea así?</em>' : '¿Tenés un proyecto parecido? <em>Hablemos.</em>'}
+    href={isContent ? '/servicios/produccion-de-contenidos/#consulta' : '/contacto/'}
+    cta={isContent ? 'Hablemos de tu contenido' : 'Escribinos'}
+    secondary={{ label: 'Ver más proyectos', href: '/proyectos/' }}
+  />
+</Base>
+
+<style>
+  .head { padding-top: clamp(1.5rem, 1rem + 2vw, 3rem); }
+  .crumbs ol { display: flex; gap: 8px; margin: 0 0 clamp(2rem, 1.5rem + 2vw, 3.5rem); color: var(--muted); }
+  .crumbs li + li::before { content: '/'; margin-right: 8px; }
+  .crumbs a { text-decoration: none; font-weight: 600; color: var(--ink); }
+  .crumbs a:hover { color: var(--blue); }
+  .head-grid { display: grid; gap: var(--s-7); padding-bottom: clamp(2rem, 1.5rem + 2vw, 3.5rem); }
+  .head-main { display: grid; gap: var(--s-5); align-content: start; }
+  .head-main .lead { max-width: 40ch; }
+  .client-logo { display: inline-flex; justify-self: start; padding: 14px 18px; background: #fff; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--line); }
+  .client-logo :global(img) { height: 40px; width: auto; }
+  .client-logo--dark { background: var(--ink); box-shadow: none; }
+  .facts { display: grid; gap: 0; margin: 0; border-top: 1px solid var(--ink); align-self: end; }
+  .facts > div { display: grid; grid-template-columns: 9.5rem 1fr; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .facts dd { font-weight: 600; }
+  .facts .tag a { text-decoration: none; }
+  .facts .tag:hover { border-color: var(--ink); color: var(--ink); }
+  .links { display: grid; gap: 8px; justify-items: start; }
+  @media (min-width: 1024px) {
+    .head-grid { grid-template-columns: repeat(12, 1fr); column-gap: var(--gap); }
+    .head-main { grid-column: 1 / span 7; }
+    .facts { grid-column: 8 / span 5; }
+  }
+  @media (max-width: 479px) { .facts > div { grid-template-columns: 1fr; gap: 4px; } }
+
+  .hero-media { margin-bottom: var(--section); }
+  .story { display: grid; gap: var(--s-8); margin-bottom: var(--section); }
+  .story-block { display: grid; gap: var(--s-5); }
+  .story-block h2 { padding-top: 12px; border-top: 1px solid var(--ink); }
+  .prose { font-size: var(--fs-lead); line-height: 1.55; font-weight: 500; max-width: 46ch; }
+  .deliv { margin: 0; }
+  .deliv li { display: grid; grid-template-columns: 2.5rem 1fr; gap: 8px; padding: 12px 0; border-bottom: 1px solid var(--line); font-weight: 600; }
+  .deliv .num { padding-top: 4px; }
+  @media (min-width: 1024px) { .story { grid-template-columns: 7fr 5fr; column-gap: calc(var(--gap) * 3); } }
+
+  .block { margin-bottom: var(--section); }
+  .block-title { padding-top: 12px; border-top: 1px solid var(--ink); margin-bottom: var(--s-6); }
+  .web-list { display: grid; gap: var(--s-8); max-width: 1000px; margin-inline: auto; }
+  .img-grid { display: grid; gap: var(--gap); }
+  @media (min-width: 900px) { .img-grid { grid-template-columns: 1fr 1fr; } .img-grid--one { grid-template-columns: 1fr; } }
+
+  .social { padding-block: var(--section); }
+  .social-head { display: grid; gap: var(--s-4); margin-bottom: var(--s-7); max-width: 60ch; }
+  .phones { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--s-7) var(--gap); margin: 0 0 var(--s-7); }
+  @media (min-width: 768px) { .phones { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 1100px) { .phones { grid-template-columns: repeat(4, 1fr); } .phones--light { grid-template-columns: repeat(6, 1fr); } }
+  .on-dark { color: #fff; }
+
+  .sb { padding-block: var(--section); border-top: 1px solid var(--line); position: relative; }
+  .sb::before { content: ''; position: absolute; left: 0; top: -1px; height: 4px; width: min(30%, 280px); background: var(--brand); }
+  .sb:nth-child(even) { background: var(--white); }
+  .sb-head { display: grid; gap: var(--s-3); margin-bottom: var(--s-7); }
+  .sb-grid { display: grid; gap: var(--s-6); margin-bottom: var(--s-7); align-items: start; }
+  .sb-copy { display: grid; gap: var(--s-5); justify-items: start; font-size: var(--fs-lead); max-width: 40ch; }
+  @media (min-width: 1024px) { .sb-grid { grid-template-columns: 5fr 7fr; column-gap: calc(var(--gap) * 2); } }
+  .sb-profile { margin-bottom: var(--s-7); }
+  .pieces { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); margin: 0; }
+  @media (max-width: 600px) { .pieces { grid-template-columns: 1fr 1fr; } }
+
+  .next { padding-block: var(--s-7); margin-bottom: var(--section); }
+  .next-link { display: grid; gap: 10px; text-decoration: none; padding-top: 18px; border-top: 1px solid var(--ink); }
+  .next-link .arrow { display: inline-block; transition: transform var(--t) var(--ease); }
+  .next-link:hover .h2 { color: var(--blue); }
+  .next-link:hover .arrow { transform: translateX(8px); }
+  .rel-grid { display: grid; gap: var(--s-7) var(--gap); margin: 0; }
+  @media (min-width: 768px) { .rel-grid { grid-template-columns: repeat(3, 1fr); } }
+</style>

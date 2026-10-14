@@ -1,0 +1,36 @@
+---
+import Base from '../layouts/Base.astro';
+import ContactForm from '../components/ContactForm.astro';
+import { SITE } from '../data/site';
+const schema = [{ '@context': 'https://schema.org', '@type': 'ContactPage', name: 'Contacto — Digital Tie', url: new URL('/contacto/', Astro.site).href }];
+---
+<Base
+  title="Contacto — Hablemos de tu proyecto"
+  description="Contanos qué necesitás: estrategia, branding, sitio web, e-commerce, contenidos o campañas. Te respondemos con próximos pasos concretos."
+  breadcrumbs={[{ name: 'Contacto', href: '/contacto/' }]}
+  schema={schema}
+>
+  <section class="container wrap">
+    <div class="copy">
+      <p class="label">Contacto</p>
+      <h1 class="display">Hablemos<span class="knot" aria-hidden="true"></span></h1>
+      <p class="lead muted">Contanos en qué punto está tu marca y qué te gustaría lograr. Leemos cada consulta y respondemos con una propuesta de próximos pasos.</p>
+      <dl class="ways">
+        <div><dt class="label">Correo</dt><dd><a href={`mailto:${SITE.email}`}>{SITE.email}</a></dd></div>
+        {SITE.whatsapp && <div><dt class="label">WhatsApp</dt><dd><a href={`https://wa.me/${SITE.whatsapp}`} target="_blank" rel="noopener noreferrer">Escribinos por WhatsApp ↗</a></dd></div>}
+        <div><dt class="label">¿Buscás contenidos?</dt><dd><a href="/servicios/produccion-de-contenidos/#consulta">Consulta de producción de contenidos →</a></dd></div>
+      </dl>
+    </div>
+    <div class="form"><ContactForm variant="general" id="form-contacto" /></div>
+  </section>
+</Base>
+<style>
+  .wrap { display: grid; gap: var(--s-8); padding-block: clamp(2.5rem, 2rem + 4vw, 6rem) var(--section); }
+  .copy { display: grid; gap: var(--s-5); align-content: start; }
+  .copy .lead { max-width: 40ch; }
+  .ways { display: grid; margin: var(--s-4) 0 0; border-top: 1px solid var(--ink); }
+  .ways > div { display: grid; gap: 4px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .ways a { font-weight: 700; text-decoration: none; font-size: var(--fs-h4); word-break: break-word; }
+  .ways a:hover { color: var(--blue); }
+  @media (min-width: 1024px) { .wrap { grid-template-columns: repeat(12, 1fr); column-gap: var(--gap); } .copy { grid-column: 1 / span 5; } .form { grid-column: 7 / span 6; padding-top: 2rem; } }
+</style>

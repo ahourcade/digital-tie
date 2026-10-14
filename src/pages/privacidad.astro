@@ -1,0 +1,38 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../data/site';
+---
+<Base title="Privacidad y cookies" description="Política de privacidad y uso de cookies del sitio de Digital Tie." breadcrumbs={[{ name: 'Privacidad y cookies', href: '/privacidad/' }]}>
+  <article class="container legal">
+    <p class="label">Legal · Texto base sujeto a revisión legal</p>
+    <h1 class="h1">Privacidad y cookies</h1>
+    <p class="muted small">Última actualización: {new Date().toLocaleDateString('es-AR', { year: 'numeric', month: 'long' })}</p>
+
+    <h2 class="h4">1. Responsable</h2>
+    <p>El responsable del tratamiento de los datos personales recabados en este sitio es Digital Tie. Contacto: <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.</p>
+
+    <h2 class="h4">2. Qué datos recolectamos</h2>
+    <p>Solo los datos que nos enviás voluntariamente a través de los formularios o por correo: nombre, empresa o marca, correo electrónico y el contenido de tu consulta.</p>
+
+    <h2 class="h4">3. Para qué los usamos</h2>
+    <p>Para responder tu consulta y, si corresponde, preparar una propuesta. No vendemos ni cedemos tus datos a terceros con fines comerciales.</p>
+
+    <h2 class="h4">4. Proveedores</h2>
+    <p>El envío de formularios puede procesarse mediante un proveedor externo de formularios o de correo, que actúa por cuenta de Digital Tie. [Completar con el proveedor efectivamente utilizado.]</p>
+
+    <h2 class="h4">5. Cookies y medición</h2>
+    <p>El sitio no usa cookies propias de seguimiento. Si se activan herramientas de medición (por ejemplo, Google Analytics mediante Google Tag Manager, o el Pixel de Meta), se cargarán solo después de que aceptes su uso en el aviso de cookies, y podrás rechazarlas.</p>
+
+    <h2 class="h4">6. Tus derechos</h2>
+    <p>Podés solicitar el acceso, la rectificación o la supresión de tus datos escribiendo a <a href={`mailto:${SITE.email}`}>{SITE.email}</a>, conforme a la Ley 25.326 de Protección de Datos Personales de la República Argentina. La Agencia de Acceso a la Información Pública es el órgano de control de esta ley.</p>
+
+    <h2 class="h4">7. Material de clientes</h2>
+    <p>Las marcas, logotipos, capturas e imágenes de proyectos que se muestran en el portfolio pertenecen a sus respectivos titulares y se exhiben como muestra del trabajo realizado por Digital Tie.</p>
+  </article>
+</Base>
+<style>
+  .legal { max-width: 760px; padding-block: clamp(2.5rem, 2rem + 4vw, 6rem) var(--section); display: grid; gap: var(--s-4); }
+  .legal h1 { margin-bottom: var(--s-2); }
+  .legal h2 { margin-top: var(--s-6); }
+  .legal p { color: var(--ink-2); }
+</style>

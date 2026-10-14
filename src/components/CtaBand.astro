@@ -1,0 +1,33 @@
+---
+interface Props { title?: string; text?: string; cta?: string; href?: string; secondary?: { label: string; href: string } }
+const {
+  title = '¿Tenés un proyecto en mente? <em>Hablemos.</em>',
+  text = 'Contanos en qué punto está tu marca y qué necesitás. Te respondemos con una propuesta de próximos pasos, no con un paquete prearmado.',
+  cta = 'Escribinos', href = '/contacto/', secondary,
+} = Astro.props;
+---
+<section class="cta-band surface-dark" aria-labelledby="cta-band-title">
+  <div class="container inner">
+    <p class="label">Próximo paso</p>
+    <h2 class="display t" id="cta-band-title" set:html={title} />
+    <div class="row">
+      <p class="lead muted">{text}</p>
+      <div class="actions">
+        <a class="btn btn--primary" href={href} data-track="cta_contact" data-track-label="cta-band">{cta} <span class="arrow" aria-hidden="true">→</span></a>
+        {secondary && <a class="btn btn--ghost" href={secondary.href}>{secondary.label}</a>}
+      </div>
+    </div>
+  </div>
+</section>
+<style>
+  .cta-band { padding-block: var(--section); }
+  .inner { display: grid; gap: var(--s-6); }
+  .t { font-size: clamp(2.5rem, 1rem + 6vw, 6.5rem); max-width: 14ch; }
+  .t :global(em) { font-style: normal; color: var(--blue-on-dark); }
+  .row { display: grid; gap: var(--s-6); align-items: end; }
+  .row .lead { max-width: 46ch; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+  .surface-dark .btn--primary { --btn-bg: var(--blue); --btn-fg: #fff; --btn-bd: var(--blue); }
+  .surface-dark .btn--primary:hover { --btn-bg: #fff; --btn-fg: var(--ink); --btn-bd: #fff; }
+  @media (min-width: 900px) { .row { grid-template-columns: 1fr auto; } }
+</style>

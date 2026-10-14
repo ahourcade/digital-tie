@@ -1,0 +1,30 @@
+---
+/**
+ * Wordmark DIGITAL TIE — construido con contornos reales de Manrope ExtraBold (800).
+ * La «I» de TIE es la corbata: nudo + pala, en azul #0066FF.
+ * Propuesta fiel pendiente de validación contra el archivo maestro (opción 1 del rebranding).
+ */
+import data from '../data/logo-paths.json';
+interface Props { variant?: 'ink' | 'white'; class?: string; title?: string; height?: number }
+const { variant = 'ink', class: cls = '', title = 'DIGITAL TIE', height } = Astro.props;
+const ink = variant === 'white' ? '#FFFFFF' : '#0C1525';
+const ov = 50; // overshoot (unidades de fuente)
+---
+<svg
+  class:list={['logo', cls]}
+  viewBox={`0 0 ${data.w} ${data.h}`}
+  role={title ? 'img' : undefined}
+  aria-label={title || undefined}
+  aria-hidden={title ? undefined : 'true'}
+  focusable="false"
+  style={height ? `height:${height}px;width:auto` : undefined}
+>
+  <g transform={`matrix(1 0 0 -1 0 ${data.h - ov})`}>
+    {data.parts.map((p) => (
+      <path transform={`translate(${p.dx} 0)`} fill={p.cls === 'tie' ? '#0066FF' : ink} d={p.d} />
+    ))}
+  </g>
+</svg>
+<style>
+  .logo { display: block; height: 1em; width: auto; overflow: visible; }
+</style>

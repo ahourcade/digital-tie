@@ -1,0 +1,16 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Página no encontrada" description="La página que buscás no existe o cambió de dirección." noindex>
+  <section class="container nf">
+    <p class="label">Error 404</p>
+    <h1 class="display">Esta página se desató<span class="knot" aria-hidden="true"></span></h1>
+    <p class="lead muted">La dirección no existe o cambió. Podés seguir por acá:</p>
+    <div class="links"><a class="btn btn--primary" href="/">Ir al inicio</a><a class="btn btn--ghost" href="/proyectos/">Ver proyectos</a></div>
+  </section>
+</Base>
+<style>
+  .nf { display: grid; gap: var(--s-5); padding-block: clamp(3rem, 2rem + 6vw, 9rem) var(--section); justify-items: start; }
+  .nf h1 { max-width: 12ch; }
+  .links { display: flex; gap: 12px; flex-wrap: wrap; }
+</style>

@@ -1,0 +1,71 @@
+---
+import Logo from './Logo.astro';
+import { NAV, SITE } from '../data/site';
+import { SERVICES } from '../data/services';
+const year = new Date().getFullYear();
+---
+<footer class="site-footer surface-dark">
+  <div class="container">
+    <div class="top">
+      <p class="statement h3">La creatividad también tiene <span class="nowrap">método<span class="knot" aria-hidden="true"></span></span></p>
+      <div class="contact">
+        <p class="label">Nuevos proyectos</p>
+        <a class="mail" href={`mailto:${SITE.email}`}>{SITE.email}</a>
+        {SITE.whatsapp && <a class="link-arrow" href={`https://wa.me/${SITE.whatsapp}`} rel="noopener noreferrer" target="_blank">WhatsApp <span class="arrow" aria-hidden="true">↗</span></a>}
+        <a class="btn" href="/contacto/" data-track="cta_contact" data-track-label="footer">Hablemos <span class="arrow" aria-hidden="true">→</span></a>
+      </div>
+    </div>
+    <div class="cols">
+      <nav aria-label="Sitio">
+        <p class="label">Sitio</p>
+        <ul role="list">
+          {NAV.map((n) => <li><a href={n.href}>{n.label}</a></li>)}
+          <li><a href="/contacto/">Contacto</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Servicios">
+        <p class="label">Servicios</p>
+        <ul role="list">
+          {SERVICES.map((s) => <li><a href={s.href ?? `/servicios/#${s.slug}`}>{s.name}</a></li>)}
+        </ul>
+      </nav>
+      <div>
+        <p class="label">Digital Tie</p>
+        <p class="muted small">Agencia y consultora de marketing digital. Más de diez años trabajando con empresas y pymes de Argentina y la región.</p>
+        {SITE.social.length > 0 && (
+          <ul role="list" class="social">
+            {SITE.social.map((s) => <li><a href={s.url} target="_blank" rel="noopener noreferrer">{s.label}</a></li>)}
+          </ul>
+        )}
+      </div>
+    </div>
+    <div class="mark" aria-hidden="true"><Logo variant="white" title="" /></div>
+    <div class="legal small">
+      <p>© {year} Digital Tie. Todos los derechos reservados.</p>
+      <p><a href="/privacidad/">Privacidad y cookies</a></p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer { padding-block: var(--section) var(--s-6); }
+  .top { display: grid; grid-template-columns: 1fr; gap: var(--s-7); padding-bottom: var(--s-8); border-bottom: 1px solid var(--rule); }
+  .statement { max-width: 18ch; font-size: var(--fs-h2); line-height: 1.05; letter-spacing: -0.035em; }
+  .statement .knot { margin-left: .06em; }
+  .contact { display: grid; gap: var(--s-4); justify-items: start; align-content: end; }
+  .mail { font-size: var(--fs-h4); font-weight: 700; text-decoration: none; border-bottom: 1px solid var(--rule); padding-bottom: 4px; word-break: break-word; }
+  .mail:hover { border-color: currentColor; }
+  .cols { display: grid; grid-template-columns: 1fr; gap: var(--s-6); padding-block: var(--s-7); }
+  .cols ul { margin: var(--s-3) 0 0; display: grid; gap: 6px; }
+  .cols a { text-decoration: none; color: var(--fg-muted); font-weight: 500; padding: 4px 0; display: inline-block; }
+  .cols a:hover { color: var(--fg); }
+  .cols .label { margin-bottom: var(--s-2); }
+  .mark { padding-block: var(--s-6) var(--s-5); opacity: .95; }
+  .mark :global(.logo) { width: 100%; height: auto; }
+  .legal { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--s-3); color: var(--fg-muted); padding-top: var(--s-4); border-top: 1px solid var(--rule); }
+  .legal a { color: inherit; }
+  @media (min-width: 768px) {
+    .top { grid-template-columns: 1.4fr 1fr; align-items: end; }
+    .cols { grid-template-columns: 1fr 1.3fr 1.3fr; }
+  }
+</style>

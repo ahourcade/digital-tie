@@ -1,0 +1,384 @@
+---
+import Base from '../layouts/Base.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import SectionHead from '../components/SectionHead.astro';
+import PhoneFrame from '../components/PhoneFrame.astro';
+import ContactForm from '../components/ContactForm.astro';
+import { Image } from 'astro:assets';
+import { img } from '../lib/images';
+import { SITE, METHOD } from '../data/site';
+import { SERVICES } from '../data/services';
+import { featuredProjects, PROJECTS, categoryLabel } from '../data/projects';
+
+const featured = featuredProjects();
+const total = PROJECTS.length;
+
+// Hoja de contactos del hero: trabajos reales, mezcla de formatos.
+const sheet = [
+  { src: 'vzh/cover.webp', alt: 'Sitio web de VZH', cap: 'VZH', kind: 'Sitio web', href: '/proyectos/vzh/', shape: 'land' },
+  { src: 'pro-atv/ig-prokids-20.jpg', alt: 'Reel de PRO KIDS', cap: 'PRO KIDS', kind: 'Reel', href: '/proyectos/pro-atv/', shape: 'phone' },
+  { src: 'recetario-ivess/cover.webp', alt: 'Recetario IVESS', cap: 'Recetario IVESS', kind: 'Sitio web', href: '/proyectos/recetario-ivess/', shape: 'land' },
+  { src: 'homer-and-co/ig-07.jpg', alt: 'Carrusel de Homer & Co', cap: 'Homer & Co', kind: 'Carrusel', href: '/proyectos/homer-and-co/', shape: 'phone' },
+  { src: 'polistore/cover.webp', alt: 'E-commerce de PoliStore', cap: 'PoliStore', kind: 'E-commerce', href: '/proyectos/polistore/', shape: 'land' },
+  { src: 'vzh/ig-00.jpg', alt: 'Reel de VZH', cap: 'VZH', kind: 'Reel', href: '/proyectos/vzh/', shape: 'phone' },
+  { src: 'starnet/cover.webp', alt: 'Sitio de Starnet', cap: 'Starnet', kind: 'Sitio web', href: '/proyectos/starnet/', shape: 'land' },
+];
+
+const layout = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'ProfessionalService',
+    '@id': `${Astro.site}#org`,
+    name: 'Digital Tie',
+    url: Astro.site?.href,
+    logo: new URL('/brand/logo-digital-tie.svg', Astro.site).href,
+    description: SITE.description,
+    email: SITE.email,
+    areaServed: SITE.areaServed,
+    knowsAbout: ['Marketing digital', 'Branding', 'Diseño web', 'E-commerce', 'Producción de contenidos', 'Meta Ads', 'Google Ads'],
+    sameAs: SITE.social.map((s) => s.url),
+  },
+  { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Digital Tie', url: Astro.site?.href, inLanguage: 'es-AR', publisher: { '@id': `${Astro.site}#org` } },
+];
+---
+<Base
+  title="Digital Tie — Agencia de marketing digital: estrategia, diseño y contenidos"
+  description="Agencia y consultora de marketing digital con más de 10 años. Estrategia, branding, sitios web, e-commerce y producción integral de contenidos para empresas y pymes."
+  schema={schema}
+>
+  <!-- A · HERO -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-grid container" aria-hidden="true">{Array.from({ length: 12 }).map(() => <span />)}</div>
+    <div class="container hero-inner">
+      <div class="hero-meta">
+        <p class="label label--fg">Agencia y consultora de marketing digital</p>
+        <p class="label">Argentina · Más de 10 años</p>
+      </div>
+      <h1 id="hero-title" class="display hero-title">
+        La creatividad <span class="line">también tiene</span> <span class="line nowrap">método<span class="knot hero-knot" aria-hidden="true"></span><span class="visually-hidden">.</span></span>
+      </h1>
+      <div class="hero-row">
+        <div class="hero-copy">
+          <p class="lead">Somos un equipo que piensa como consultora y produce como estudio. Unimos estrategia de negocio, diseño, tecnología y contenido para que tu marca crezca en digital.</p>
+          <div class="hero-ctas">
+            <a class="btn btn--primary" href="/proyectos/">Ver proyectos <span class="arrow" aria-hidden="true">→</span></a>
+            <a class="btn btn--ghost" href="/contacto/" data-track="cta_contact" data-track-label="hero">Hablemos</a>
+          </div>
+        </div>
+        <ol class="hero-method" role="list" aria-label="Nuestro método">
+          {METHOD.map((m) => (
+            <li><span class="label num">{m.n}</span><span class="m-title">{m.title}</span></li>
+          ))}
+        </ol>
+      </div>
+    </div>
+    <div class="sheet-wrap">
+      <ul class="sheet container no-scrollbar" role="list" aria-label="Trabajos recientes">
+        {sheet.map((s, i) => {
+          const meta = img(s.src);
+          return (
+            <li class:list={['shot', `shot--${s.shape}`]} style={`--i:${i}`}>
+              <a href={s.href} aria-label={`${s.cap}: ${s.kind}`}>
+                <span class="frame">
+                  <Image src={meta} alt={s.alt} widths={s.shape === 'phone' ? [180, 270, 360] : [320, 480, Math.min(meta.width, 720)]} sizes={s.shape === 'phone' ? '150px' : '(min-width: 1024px) 380px, 300px'} format="webp" quality={78} loading={i < 4 ? 'eager' : 'lazy'} fetchpriority={i === 0 ? 'high' : 'auto'} />
+                </span>
+                <span class="cap"><span class="label num">Fig. {String(i + 1).padStart(2, '0')}</span> <span class="cap-name">{s.cap}</span> <span class="cap-kind">{s.kind}</span></span>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  </section>
+
+  <!-- B · POSICIONAMIENTO -->
+  <section class="proof surface-white" aria-label="Quiénes somos en tres datos">
+    <div class="container proof-grid">
+      <div class="proof-item" data-reveal>
+        <p class="proof-big num">+10<span class="accent">.</span></p>
+        <p class="label label--fg">Años en el mercado</p>
+        <p class="muted">Más de una década diseñando, desarrollando y comunicando para empresas y pymes.</p>
+      </div>
+      <div class="proof-item" data-reveal>
+        <p class="proof-big">Método<span class="accent">.</span></p>
+        <p class="label label--fg">Formación corporativa</p>
+        <p class="muted">Antes de Digital Tie, sus fundadores trabajaron en Accenture y Procter &amp; Gamble. De ahí viene nuestra forma de trabajar: objetivos claros, procesos y seguimiento.</p>
+      </div>
+      <div class="proof-item" data-reveal>
+        <p class="proof-big">Hacer<span class="accent">.</span></p>
+        <p class="label label--fg">Pensar e implementar</p>
+        <p class="muted">Estrategia, diseño, desarrollo web y producción audiovisual en un mismo equipo. Sin pasar la posta entre proveedores.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- C · PROYECTOS DESTACADOS -->
+  <section class="section work" aria-labelledby="work-title">
+    <div class="container">
+      <SectionHead index="01" kicker="Proyectos seleccionados" id="work-title" title="Trabajo real, <em>para marcas reales.</em>" text="Sitios, tiendas, identidades y contenidos que diseñamos, desarrollamos y pusimos en marcha." />
+      <div class="work-grid">
+        {featured.slice(0, 7).map((p, i) => (
+          <div class:list={['w', `w--${layout[i]}`]} data-reveal>
+            <ProjectCard project={p} index={i + 1} size={i === 0 ? 'xl' : i < 4 ? 'lg' : 'md'} priority={false} />
+          </div>
+        ))}
+        {featured[7] && (
+          <div class="w w--h" data-reveal><ProjectCard project={featured[7]} index={8} size="md" /></div>
+        )}
+        <a class="w w--all all-tile surface-dark" href="/proyectos/" data-reveal>
+          <span class="label">Portfolio completo</span>
+          <span class="all-title">Ver los {total} proyectos <span class="arrow" aria-hidden="true">→</span></span>
+          <span class="all-cats">{['branding', 'web', 'ecommerce', 'contenidos', 'campanas'].map((c) => <span class="tag">{categoryLabel(c as any)}</span>)}</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- D · SERVICIOS -->
+  <section class="section surface-white services" aria-labelledby="services-title">
+    <div class="container">
+      <SectionHead index="02" kicker="Servicios" id="services-title" title="Pensamos, diseñamos <em>e implementamos.</em>" text="Podés contratarnos para una pieza puntual o para sostener todo tu marketing digital. En los dos casos, con el mismo criterio." />
+      <ol class="svc-list" role="list">
+        {SERVICES.map((s) => (
+          <li class:list={['svc', s.href && 'svc--feature']} data-reveal>
+            <span class="label num svc-n">{s.n}</span>
+            <h3 class="h3 svc-name">{s.name}</h3>
+            <div class="svc-body">
+              <p>{s.description}</p>
+              <a class="link-arrow" href={s.href ?? `/servicios/#${s.slug}`}>
+                {s.href ? 'Conocer el servicio completo' : 'Ver detalle'} <span class="arrow" aria-hidden="true">→</span>
+              </a>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- E · PRODUCCIÓN DE CONTENIDOS -->
+  <section class="section surface-dark content-block" aria-labelledby="content-title">
+    <div class="container cb-grid">
+      <div class="cb-copy" data-reveal>
+        <p class="label">03 — Producción de contenidos</p>
+        <h2 id="content-title" class="h2">De la idea al <span class="nowrap">publicado<span class="knot" aria-hidden="true"></span></span></h2>
+        <p class="lead">Nos encargamos del 100% de la producción de tu contenido: desde la primera idea hasta que sale al aire.</p>
+        <ol class="flow" role="list" aria-label="Etapas">
+          {['Estrategia', 'Guion', 'Filmación', 'Edición', 'Publicación', 'Análisis'].map((s, i) => <li><span class="num">{i + 1}</span>{s}</li>)}
+        </ol>
+        <div class="cb-ctas">
+          <a class="btn" href="/servicios/produccion-de-contenidos/">Conocer el servicio <span class="arrow" aria-hidden="true">→</span></a>
+        </div>
+        <p class="small muted cb-note">Métricas tal como se ven en cada captura de Instagram, al momento de tomarla.</p>
+      </div>
+      <div class="cb-phones">
+        <div class="p p1"><PhoneFrame src="vzh/ig-00.jpg" alt="Reel de VZH: ¿Listo para salir a la ruta?" postId="vzh-00" group="home-content" tone="dark" sizes="(min-width: 1024px) 18vw, 44vw" /></div>
+        <div class="p p2"><PhoneFrame src="pro-atv/ig-prokids-20.jpg" alt="Reel de PRO KIDS: su primera moto" postId="prokids-20" group="home-content" tone="dark" sizes="(min-width: 1024px) 18vw, 44vw" /></div>
+        <div class="p p3"><PhoneFrame src="homer-and-co/ig-07.jpg" alt="Carrusel de Homer & Co: Una sala de cine. En tu casa." postId="homer-07" group="home-content" tone="dark" sizes="(min-width: 1024px) 18vw, 44vw" /></div>
+        <div class="p p4"><PhoneFrame src="pro-atv/ig-proenergy-14.jpg" alt="Reel de PRO ENERGY Home: estación de carga" postId="proenergy-14" group="home-content" tone="dark" sizes="(min-width: 1024px) 18vw, 44vw" /></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- F · NOSOTROS + MÉTODO -->
+  <section class="section about" aria-labelledby="about-title">
+    <div class="container about-grid">
+      <div class="about-copy" data-reveal>
+        <p class="label">04 — Nosotros</p>
+        <h2 id="about-title" class="h2">Corporate mindset.<br /><span class="muted">Creative execution.</span></h2>
+        <p class="lead">Somos cercanos en el trato y exigentes con el proceso. Tomamos decisiones creativas con información y las bajamos a tierra con un plan.</p>
+        <a class="link-arrow" href="/nosotros/">Conocé cómo trabajamos <span class="arrow" aria-hidden="true">→</span></a>
+      </div>
+      <ol class="method" role="list" aria-label="Método de trabajo">
+        {METHOD.map((m) => (
+          <li data-reveal>
+            <span class="label num">{m.n}</span>
+            <h3 class="h4">{m.title}</h3>
+            <p class="muted">{m.text}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- G · CONTACTO -->
+  <section class="section surface-mist contact" aria-labelledby="contact-title">
+    <div class="container contact-grid">
+      <div class="contact-copy">
+        <p class="label">05 — Contacto</p>
+        <h2 id="contact-title" class="h2">Hablemos de tu próximo <span class="nowrap">proyecto<span class="knot" aria-hidden="true"></span></span></h2>
+        <p class="lead muted">Contanos en qué punto está tu marca. Te respondemos con próximos pasos concretos.</p>
+        <p><a class="mail" href={`mailto:${SITE.email}`}>{SITE.email}</a></p>
+      </div>
+      <div class="contact-form"><ContactForm variant="general" id="home-form" /></div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* HERO */
+  .hero { position: relative; padding-top: clamp(1.5rem, 1rem + 3vw, 4.5rem); overflow: hidden; }
+  .hero-grid {
+    position: absolute; inset: 0; margin-inline: auto; pointer-events: none;
+    display: grid; grid-template-columns: repeat(12, 1fr); column-gap: var(--gap);
+  }
+  .hero-grid span { border-left: 1px solid var(--line); transform-origin: top; }
+  .hero-grid span:last-child { border-right: 1px solid var(--line); }
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-grid span { animation: draw 900ms var(--ease) both; }
+    .hero-grid span:nth-child(n) { animation-delay: calc(var(--d, 0) * 1ms); }
+    .hero-title .line, .hero-title { animation: rise 700ms var(--ease) both; }
+    .hero-knot { animation: knot 600ms 650ms var(--ease) both; }
+    .shot { animation: rise 700ms calc(300ms + var(--i) * 70ms) var(--ease) both; }
+  }
+  .hero-grid span:nth-child(2) { --d: 40; } .hero-grid span:nth-child(3) { --d: 80; } .hero-grid span:nth-child(4) { --d: 120; }
+  .hero-grid span:nth-child(5) { --d: 160; } .hero-grid span:nth-child(6) { --d: 200; } .hero-grid span:nth-child(7) { --d: 240; }
+  .hero-grid span:nth-child(8) { --d: 280; } .hero-grid span:nth-child(9) { --d: 320; } .hero-grid span:nth-child(10) { --d: 360; }
+  .hero-grid span:nth-child(11) { --d: 400; } .hero-grid span:nth-child(12) { --d: 440; }
+  @keyframes draw { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+  @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+  @keyframes knot { from { opacity: 0; transform: translateY(-0.4em) scale(.6); } to { opacity: 1; transform: none; } }
+
+  .hero-inner { position: relative; display: grid; gap: clamp(1.75rem, 1rem + 2.5vw, 3.5rem); }
+  .hero-meta { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  .hero-title { max-width: 12ch; }
+  .hero-title .line { display: inline; }
+  .hero-knot { width: .26em; height: .18em; margin-left: .04em; }
+  .hero-row { display: grid; gap: var(--s-6); }
+  .hero-copy { display: grid; gap: var(--s-5); max-width: 40rem; }
+  .hero-ctas { display: flex; flex-wrap: wrap; gap: 12px; }
+  .hero-method { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; margin: 0; border-top: 1px solid var(--ink); align-self: end; }
+  .hero-method li { display: grid; gap: 6px; padding: 14px 12px 14px 0; border-bottom: 1px solid var(--line); }
+  .m-title { font-weight: 700; letter-spacing: -0.01em; }
+
+  .sheet-wrap { position: relative; margin-top: clamp(2.5rem, 2rem + 3vw, 5rem); padding-bottom: clamp(2.5rem, 2rem + 2vw, 4rem); }
+  .sheet {
+    display: flex; align-items: flex-end; gap: clamp(12px, 1.4vw, 22px); margin: 0; padding-block: 6px;
+    overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: var(--gutter);
+  }
+  .shot { flex: none; scroll-snap-align: start; }
+  .shot a { display: grid; gap: 10px; text-decoration: none; }
+  .frame { display: block; overflow: hidden; border-radius: var(--radius); background: var(--mist); }
+  .shot--land .frame { height: clamp(150px, 12vw + 80px, 250px); aspect-ratio: 3 / 2; }
+  .shot--phone .frame { height: clamp(210px, 16vw + 110px, 330px); aspect-ratio: 738 / 1600; border-radius: 14px; background: #0a0f18; padding: 4px; }
+  .frame :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: top; transition: transform var(--t-slow) var(--ease); }
+  .shot--phone .frame :global(img) { border-radius: 10px; }
+  .shot a:hover .frame :global(img) { transform: scale(1.03); }
+  .cap { display: flex; gap: 8px; align-items: baseline; font-size: .8125rem; white-space: nowrap; }
+  .cap-name { font-weight: 700; }
+  .cap-kind { color: var(--muted); }
+  .shot a:hover .cap-name { color: var(--blue); }
+
+  @media (min-width: 1024px) {
+    .hero-row { grid-template-columns: repeat(12, 1fr); column-gap: var(--gap); align-items: end; }
+    .hero-copy { grid-column: 1 / span 6; }
+    .hero-method { grid-column: 8 / span 5; grid-template-columns: repeat(4, 1fr); }
+    .hero-method li { padding-right: 8px; }
+    .sheet { display: grid; grid-template-columns: minmax(0,1.5fr) minmax(0,.47fr) minmax(0,1.5fr) minmax(0,.47fr) minmax(0,1.5fr); overflow: visible; align-items: end; }
+    .shot:nth-child(n + 6) { display: none; }
+    .shot--land .frame, .shot--phone .frame { height: auto; width: 100%; }
+    .cap { white-space: normal; flex-wrap: wrap; row-gap: 0; }
+  }
+  @media (max-width: 1023px) {
+    .hero-grid span:nth-child(n + 7) { display: none; }
+    .hero-grid { grid-template-columns: repeat(6, 1fr); }
+    .sheet { padding-inline: var(--gutter); max-width: none; }
+  }
+
+  /* B · PROOF */
+  .proof { border-block: 1px solid var(--line); }
+  .proof-grid { display: grid; grid-template-columns: 1fr; }
+  .proof-item { display: grid; gap: 10px; align-content: start; padding: clamp(2rem, 1.5rem + 2vw, 3.5rem) 0; border-bottom: 1px solid var(--line); }
+  .proof-item:last-child { border-bottom: 0; }
+  .proof-big { font-size: clamp(2.5rem, 1.6rem + 3vw, 4.5rem); font-weight: 750; letter-spacing: -0.045em; line-height: 1; margin-bottom: 8px; }
+  .proof-item .muted { max-width: 36ch; }
+  @media (min-width: 900px) {
+    .proof-grid { grid-template-columns: repeat(3, 1fr); }
+    .proof-item { border-bottom: 0; border-left: 1px solid var(--line); padding-inline: clamp(1.25rem, 2vw, 2.5rem); }
+    .proof-item:first-child { border-left: 0; padding-left: 0; }
+  }
+
+  /* C · WORK GRID */
+  .work-grid { display: grid; gap: clamp(2.5rem, 2rem + 2vw, 4.5rem) var(--gap); grid-template-columns: 1fr; }
+  @media (min-width: 700px) { .work-grid { grid-template-columns: repeat(2, 1fr); } .w--a { grid-column: 1 / -1; } }
+  @media (min-width: 1024px) {
+    .work-grid { grid-template-columns: repeat(12, 1fr); }
+    .w--a { grid-column: 1 / span 8; }
+    .w--b { grid-column: 9 / span 4; align-self: end; }
+    .w--c { grid-column: 1 / span 5; margin-top: 4rem; }
+    .w--d { grid-column: 7 / span 6; }
+    .w--e { grid-column: 1 / span 4; }
+    .w--f { grid-column: 5 / span 4; margin-top: 3rem; }
+    .w--g { grid-column: 9 / span 4; }
+    .w--h { grid-column: 1 / span 4; }
+    .w--all { grid-column: 5 / span 8; }
+  }
+  .all-tile {
+    display: grid; align-content: space-between; gap: var(--s-6); min-height: 260px;
+    padding: clamp(1.5rem, 1rem + 2vw, 3rem); border-radius: var(--radius); text-decoration: none;
+    transition: background var(--t) var(--ease);
+  }
+  .all-tile:hover { background: var(--blue); }
+  .all-title { font-size: var(--fs-h2); font-weight: 720; letter-spacing: -0.035em; line-height: 1.05; }
+  .all-title .arrow { display: inline-block; transition: transform var(--t) var(--ease); }
+  .all-tile:hover .all-title .arrow { transform: translateX(6px); }
+  .all-cats { display: flex; flex-wrap: wrap; gap: 6px; }
+  .all-tile .tag { color: #dfe4ec; }
+
+  /* D · SERVICES */
+  .svc-list { margin: 0; border-top: 1px solid var(--ink); }
+  .svc { display: grid; gap: 10px var(--gap); padding: clamp(1.5rem, 1rem + 1.5vw, 2.5rem) 0; border-bottom: 1px solid var(--line); }
+  .svc-body { display: grid; gap: 14px; justify-items: start; color: var(--fg-muted); max-width: 52ch; }
+  .svc--feature .svc-name::after { content: ''; display: inline-block; width: .42em; height: .28em; margin-left: .3em; background: var(--blue); clip-path: polygon(0 0, 100% 0, 82% 100%, 18% 100%); }
+  .svc-body .link-arrow { color: var(--fg); }
+  @media (min-width: 900px) {
+    .svc { grid-template-columns: repeat(12, 1fr); align-items: baseline; }
+    .svc-n { grid-column: 1 / span 1; }
+    .svc-name { grid-column: 2 / span 5; }
+    .svc-body { grid-column: 8 / span 5; }
+  }
+
+  /* E · CONTENT */
+  .content-block { overflow: hidden; }
+  .cb-grid { display: grid; gap: var(--s-8); }
+  .cb-copy { display: grid; gap: var(--s-5); align-content: start; }
+  .cb-copy .lead { max-width: 30ch; }
+  .flow { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 0; }
+  .flow li { display: inline-flex; gap: 8px; align-items: center; padding: 8px 14px; border: 1px solid var(--rule); border-radius: 999px; font-weight: 600; font-size: .9375rem; }
+  .flow .num { color: var(--blue-on-dark); font-size: .8125rem; }
+  .cb-ctas { margin-top: var(--s-3); }
+  .cb-note { max-width: 36ch; }
+  .cb-phones { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--gap); align-items: start; }
+  .p2, .p4 { margin-top: 3rem; }
+  @media (min-width: 1024px) {
+    .cb-grid { grid-template-columns: repeat(12, 1fr); column-gap: var(--gap); }
+    .cb-copy { grid-column: 1 / span 4; position: sticky; top: calc(var(--header-h) + 2rem); align-self: start; }
+    .cb-phones { grid-column: 6 / span 7; grid-template-columns: repeat(4, 1fr); }
+    .p1 { margin-top: 0; } .p2 { margin-top: 5rem; } .p3 { margin-top: 1.5rem; } .p4 { margin-top: 7rem; }
+  }
+
+  /* F · ABOUT */
+  .about-grid { display: grid; gap: var(--s-8); }
+  .about-copy { display: grid; gap: var(--s-5); justify-items: start; align-content: start; }
+  .about-copy .lead { max-width: 38ch; }
+  .method { margin: 0; display: grid; grid-template-columns: 1fr; border-top: 1px solid var(--ink); }
+  .method li { display: grid; gap: 8px; padding: 1.5rem 0; border-bottom: 1px solid var(--line); }
+  @media (min-width: 700px) { .method { grid-template-columns: 1fr 1fr; column-gap: var(--gap); } }
+  @media (min-width: 1024px) {
+    .about-grid { grid-template-columns: repeat(12, 1fr); column-gap: var(--gap); }
+    .about-copy { grid-column: 1 / span 5; }
+    .method { grid-column: 7 / span 6; }
+  }
+
+  /* G · CONTACT */
+  .contact-grid { display: grid; gap: var(--s-8); }
+  .contact-copy { display: grid; gap: var(--s-5); align-content: start; }
+  .mail { font-size: var(--fs-h4); font-weight: 700; text-decoration: none; border-bottom: 1px solid currentColor; word-break: break-word; }
+  .mail:hover { color: var(--blue); }
+  @media (min-width: 1024px) {
+    .contact-grid { grid-template-columns: repeat(12, 1fr); column-gap: var(--gap); }
+    .contact-copy { grid-column: 1 / span 5; }
+    .contact-form { grid-column: 7 / span 6; }
+  }
+</style>

@@ -1,0 +1,104 @@
+---
+/**
+ * Lightbox global accesible basado en <dialog>.
+ * Disparadores: cualquier <button data-lightbox data-src data-w data-h data-alt data-caption data-group>.
+ * Teclado: ← → para navegar, Esc para cerrar (nativo de <dialog>), foco atrapado por el navegador.
+ * Las capturas largas (web) se muestran a ancho real con scroll vertical, sin miniaturizar.
+ */
+---
+<dialog id="lightbox" class="lb" aria-label="Imagen ampliada">
+  <div class="lb-top">
+    <p class="lb-count label" aria-live="polite"></p>
+    <button type="button" class="lb-btn lb-close" data-lb-close aria-label="Cerrar (Esc)">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="1.8" fill="none"/></svg>
+    </button>
+  </div>
+  <div class="lb-stage" tabindex="0" aria-label="Imagen (desplazable)">
+    <img class="lb-img" alt="" decoding="async" />
+  </div>
+  <div class="lb-bottom">
+    <p class="lb-caption"></p>
+    <div class="lb-nav">
+      <button type="button" class="lb-btn" data-lb-prev aria-label="Imagen anterior">←</button>
+      <button type="button" class="lb-btn" data-lb-next aria-label="Imagen siguiente">→</button>
+    </div>
+  </div>
+</dialog>
+
+<style>
+  .lb {
+    width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0;
+    background: rgba(8, 13, 22, .96); color: #fff; overscroll-behavior: contain;
+  }
+  .lb[open] { display: grid; grid-template-rows: auto 1fr auto; }
+  .lb::backdrop { background: rgba(8, 13, 22, .9); }
+  .lb-top, .lb-bottom { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 12px var(--gutter); }
+  .lb-count { color: #a3adbd; }
+  .lb-stage { overflow: auto; display: grid; place-items: start center; padding: 0 var(--gutter); outline-offset: -3px; }
+  .lb-stage.is-fit { place-items: center; }
+  .lb-img { max-width: min(100%, var(--w, 100%)); height: auto; background: #111; }
+  .lb-stage.is-fit .lb-img { max-height: calc(100dvh - 140px); width: auto; }
+  .lb-caption { font-size: .9375rem; color: #d7dde6; max-width: 70ch; }
+  .lb-nav { display: flex; gap: 8px; }
+  .lb-btn {
+    min-width: 44px; min-height: 44px; border-radius: 999px; border: 1px solid rgba(255,255,255,.3);
+    background: transparent; color: #fff; font-size: 1.1rem; display: inline-grid; place-items: center;
+    transition: background var(--t-fast) var(--ease);
+  }
+  .lb-btn:hover { background: rgba(255,255,255,.12); }
+  .lb-btn[hidden] { display: none; }
+  .lb :focus-visible { outline: 2px solid var(--blue-on-dark); outline-offset: 2px; }
+</style>
+
+<script>
+  import { track } from '../scripts/analytics';
+  const dlg = document.getElementById('lightbox') as HTMLDialogElement | null;
+  if (dlg) {
+    const img = dlg.querySelector<HTMLImageElement>('.lb-img')!;
+    const stage = dlg.querySelector<HTMLElement>('.lb-stage')!;
+    const cap = dlg.querySelector<HTMLElement>('.lb-caption')!;
+    const count = dlg.querySelector<HTMLElement>('.lb-count')!;
+    const prev = dlg.querySelector<HTMLButtonElement>('[data-lb-prev]')!;
+    const next = dlg.querySelector<HTMLButtonElement>('[data-lb-next]')!;
+    let group: HTMLElement[] = [];
+    let idx = 0;
+    let opener: HTMLElement | null = null;
+
+    const show = (i: number) => {
+      idx = (i + group.length) % group.length;
+      const t = group[idx];
+      const w = Number(t.dataset.w || 0), h = Number(t.dataset.h || 0);
+      const tall = h > w * 1.6 && w > 400; // capturas largas de sitios: ancho real + scroll
+      stage.classList.toggle('is-fit', !tall);
+      img.removeAttribute('src');
+      if (w) { img.width = w; img.height = h; img.style.setProperty('--w', `${w}px`); }
+      img.src = t.dataset.src || '';
+      img.alt = t.dataset.alt || '';
+      cap.textContent = t.dataset.caption || t.dataset.alt || '';
+      count.textContent = group.length > 1 ? `${idx + 1} / ${group.length}` : '';
+      prev.hidden = next.hidden = group.length < 2;
+      stage.scrollTop = 0;
+    };
+
+    document.addEventListener('click', (e) => {
+      const t = (e.target as HTMLElement).closest<HTMLElement>('[data-lightbox]');
+      if (!t) return;
+      e.preventDefault();
+      opener = t;
+      const g = t.dataset.group;
+      group = g ? Array.from(document.querySelectorAll<HTMLElement>(`[data-lightbox][data-group="${g}"]`)).filter((el) => el.offsetParent !== null || el === t) : [t];
+      dlg.showModal();
+      show(group.indexOf(t));
+      track('lightbox_open', { label: t.dataset.alt });
+    });
+    prev.addEventListener('click', () => show(idx - 1));
+    next.addEventListener('click', () => show(idx + 1));
+    dlg.querySelector('[data-lb-close]')!.addEventListener('click', () => dlg.close());
+    dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+    dlg.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft' && group.length > 1) { e.preventDefault(); show(idx - 1); }
+      if (e.key === 'ArrowRight' && group.length > 1) { e.preventDefault(); show(idx + 1); }
+    });
+    dlg.addEventListener('close', () => { img.removeAttribute('src'); opener?.focus(); });
+  }
+</script>

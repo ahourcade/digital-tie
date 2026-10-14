@@ -1,0 +1,290 @@
+---
+import Base from '../../../layouts/Base.astro';
+import PhoneFrame from '../../../components/PhoneFrame.astro';
+import Figure from '../../../components/Figure.astro';
+import ContactForm from '../../../components/ContactForm.astro';
+import { Image, getImage } from 'astro:assets';
+import { img } from '../../../lib/images';
+import { POSTS, BRANDS, postById, type BrandKey } from '../../../data/posts';
+
+const steps = [
+  { t: 'Entender', d: 'Negocio, objetivos y audiencias. Qué tiene que lograr el contenido y para quién.' },
+  { t: 'Estrategia editorial', d: 'Investigación, pilares, calendario e ideas por canal.' },
+  { t: 'Concepto y guion', d: 'Hooks, estructura y guiones listos para filmar.' },
+  { t: 'Preproducción', d: 'Plan de rodaje, locaciones, recursos, coordinación y logística.' },
+  { t: 'Producción', d: 'Filmación y fotografía: producto, entrevistas y escenarios reales.' },
+  { t: 'Postproducción', d: 'Edición, color, sonido, subtítulos, gráficos, motion simple y adaptación a cada formato.' },
+  { t: 'Salida al aire', d: 'Copies, diseño final, carga, programación y publicación en cada canal.' },
+  { t: 'Medición', d: 'Seguimiento del desempeño y aprendizajes para las próximas piezas.' },
+];
+const channels = ['Instagram', 'TikTok', 'Facebook', 'YouTube', 'Anuncios Meta y Google', 'Sitios web'];
+const formats = [
+  { f: 'Reels y shorts', o: 'Alcance y descubrimiento. Ganchos en los primeros segundos y lenguaje de cada plataforma.' },
+  { f: 'Carruseles', o: 'Explicar, comparar y guardar. Ideales para guías de compra y contenido educativo.' },
+  { f: 'Anuncios', o: 'Piezas pensadas para un objetivo de campaña: tráfico, mensajes, leads o ventas.' },
+  { f: 'Piezas institucionales', o: 'Equipo, instalaciones y forma de trabajar. Construyen confianza.' },
+  { f: 'Tutoriales', o: 'Cómo se usa, cómo se instala, cómo se elige. Responden preguntas antes de que lleguen.' },
+  { f: 'Demostraciones de producto', o: 'El producto en uso real, con detalle y contexto.' },
+];
+
+// Galería: todas las capturas con métricas + piezas de PRO ONE (sin métricas visibles en la captura).
+type Item = { key: string; brand: BrandKey | 'proone'; src: string; alt: string; postId?: string; label: string };
+const items: Item[] = [
+  ...POSTS.map((p) => ({ key: p.id, brand: p.brand, src: p.src, alt: `${p.format} de ${BRANDS[p.brand].label}: ${p.hook}`, postId: p.id, label: BRANDS[p.brand].label })),
+  ...[1, 2, 3].map((n) => ({ key: `proone-${n}`, brand: 'proone' as const, src: `pro-atv/proone-post-${n}.png`, alt: ['Publicación de PRO ONE: Así se fabrica el cuatri Mini Commander', 'Publicación de PRO ONE: ¡Buscamos piloto!', 'Publicación de PRO ONE: Cómo prepararte para una gran aventura'][n - 1], label: 'PRO ONE' })),
+];
+const filters = [
+  { k: 'all', l: 'Todas', n: items.length },
+  ...(['vzh', 'homer', 'proenergy', 'prokids'] as BrandKey[]).map((k) => ({ k, l: BRANDS[k].label, n: items.filter((i) => i.brand === k).length })),
+  { k: 'proone', l: 'PRO ONE', n: 3 },
+];
+const featured = postById('vzh-00');
+const heroPhones = ['prokids-18', 'vzh-03', 'homer-11'].map(postById);
+
+const schema = [{
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  name: 'Producción integral de contenidos',
+  serviceType: 'Producción de contenidos para redes sociales',
+  provider: { '@type': 'Organization', name: 'Digital Tie', url: Astro.site?.href },
+  areaServed: ['Argentina', 'Latinoamérica'],
+  description: 'Estrategia editorial, guion, filmación, edición, publicación y análisis de contenidos para Instagram, TikTok, Facebook, YouTube, anuncios y sitios web.',
+}];
+---
+<Base
+  title="Producción de contenidos para redes — De la idea al publicado"
+  description="Nos encargamos del 100% de la producción de tu contenido: estrategia, guion, filmación, edición, publicación y análisis para Instagram, TikTok, YouTube, anuncios y web."
+  breadcrumbs={[{ name: 'Servicios', href: '/servicios/' }, { name: 'Producción de contenidos', href: '/servicios/produccion-de-contenidos/' }]}
+  schema={schema}
+  headerTone="dark"
+>
+  <!-- A · HERO -->
+  <section class="hero surface-dark" aria-labelledby="pc-title">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <nav class="crumbs small" aria-label="Migas de pan"><a href="/servicios/">Servicios</a> <span aria-hidden="true">/</span> Producción de contenidos</nav>
+        <h1 id="pc-title" class="display">De la idea al <span class="nowrap">publicado<span class="knot" aria-hidden="true"></span></span></h1>
+        <p class="lead">Nos encargamos del 100% de la producción de tu contenido, desde la primera idea hasta que sale al aire. Pensamos, filmamos, editamos, publicamos y medimos.</p>
+        <div class="ctas">
+          <a class="btn btn--primary" href="#consulta" data-track="cta_contact" data-track-label="contenidos-hero">Hablemos de tu contenido <span class="arrow" aria-hidden="true">→</span></a>
+          <a class="btn btn--ghost" href="#galeria">Ver trabajos</a>
+        </div>
+      </div>
+      <div class="hero-phones" aria-label="Publicaciones producidas por Digital Tie">
+        {heroPhones.map((p, i) => (
+          <div class={`hp hp${i + 1}`}><PhoneFrame src={p.src} alt={`${p.format} de ${BRANDS[p.brand].label}: ${p.hook}`} postId={p.id} group="pc-hero" tone="dark" sizes="(min-width: 1024px) 15vw, 30vw" priority={i === 0} /></div>
+        ))}
+      </div>
+    </div>
+    <ul class="container marquee" role="list" aria-label="Canales">
+      {channels.map((c) => <li>{c}</li>)}
+    </ul>
+  </section>
+
+  <!-- B · DIFERENCIAL -->
+  <section class="section diff" aria-labelledby="diff-title">
+    <div class="container diff-grid">
+      <div>
+        <p class="label">Por qué un solo equipo</p>
+        <h2 id="diff-title" class="h2">Un equipo coordina todo el flujo<span class="knot" aria-hidden="true"></span></h2>
+      </div>
+      <ul class="diff-list" role="list">
+        <li data-reveal><h3 class="h4">Sin proveedores dispersos</h3><p class="muted">No tenés que coordinar a quien piensa, a quien filma y a quien edita. Lo hacemos nosotros, con un responsable de punta a punta.</p></li>
+        <li data-reveal><h3 class="h4">Tu marca, siempre igual de reconocible</h3><p class="muted">La misma mirada define la estrategia, el guion y la edición. El tono y la identidad no se pierden entre pieza y pieza.</p></li>
+        <li data-reveal><h3 class="h4">Cada pieza mejora la siguiente</h3><p class="muted">Revisamos qué funcionó y lo llevamos al próximo calendario. Producción con método, no publicaciones sueltas.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- C · PROCESO -->
+  <section class="section surface-white process" aria-labelledby="proc-title">
+    <div class="container">
+      <div class="sec-head">
+        <p class="label">Proceso</p>
+        <h2 id="proc-title" class="h2">Ocho etapas, una sola conversación.</h2>
+      </div>
+      <ol class="steps" role="list">
+        {steps.map((s, i) => (
+          <li data-reveal>
+            <span class="step-n num">{String(i + 1).padStart(2, '0')}</span>
+            <h3 class="h4">{s.t}</h3>
+            <p class="muted">{s.d}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- D · CANALES Y FORMATOS -->
+  <section class="section formats" aria-labelledby="fmt-title">
+    <div class="container fmt-grid">
+      <div class="fmt-intro">
+        <p class="label">Canales y formatos</p>
+        <h2 id="fmt-title" class="h2">Cada formato tiene su trabajo.</h2>
+        <ul class="tags chan" role="list" aria-label="Canales">{channels.map((c) => <li class="tag">{c}</li>)}</ul>
+      </div>
+      <dl class="fmt-list">
+        {formats.map((f) => <div data-reveal><dt class="h4">{f.f}</dt><dd class="muted">{f.o}</dd></div>)}
+      </dl>
+    </div>
+  </section>
+
+  <!-- E · GALERÍA -->
+  <section class="section surface-dark gallery" id="galeria" aria-labelledby="gal-title">
+    <div class="container">
+      <div class="gal-head">
+        <div>
+          <p class="label">Trabajo publicado</p>
+          <h2 id="gal-title" class="h2">Contenido que conecta. <span class="muted">Trabajo que se puede ver.</span></h2>
+        </div>
+        <p class="muted small gal-note">Capturas originales de publicaciones producidas por Digital Tie. Los números son los que muestra cada captura al momento de tomarla: no son promedios, alcance ni resultados de campaña.</p>
+      </div>
+      <div class="gal-filters" role="group" aria-label="Filtrar por marca">
+        {filters.map((f, i) => <button type="button" class="gf" data-brand={f.k} aria-pressed={i === 0 ? 'true' : 'false'}>{f.l} <span class="num">{f.n}</span></button>)}
+      </div>
+      <p class="small muted gal-status" role="status" aria-live="polite">Mostrando {items.length} publicaciones</p>
+      <ul class="gal-grid" role="list">
+        {items.map((it) => (
+          <li data-gal={it.brand}>
+            {it.postId
+              ? <PhoneFrame src={it.src} alt={it.alt} postId={it.postId} group="galeria" tone="dark" sizes="(min-width: 1100px) 18vw, (min-width: 700px) 30vw, 46vw" />
+              : <figure class="piece"><Figure src={it.src} alt={it.alt} group="galeria" plate="ink" sizes="(min-width: 1100px) 18vw, 46vw" maxHeight="440px" /><figcaption><strong>PRO ONE</strong> <span class="muted">· Publicación</span></figcaption></figure>}
+          </li>
+        ))}
+      </ul>
+      <div class="profiles">
+        <h3 class="h4">Perfiles en los que trabajamos</h3>
+        <div class="prof-grid">
+          <Figure src="pro-atv/proone-profile.png" alt="Captura del perfil de Instagram de PRO ONE" caption="PRO ONE · @proonemotos.ar" group="perfiles" plate="ink" sizes="(min-width: 1024px) 30vw, 100vw" />
+          <Figure src="pro-atv/proenergy-profile.png" alt="Captura del perfil de Instagram de PRO ENERGY Home" caption="PRO ENERGY Home · @proenergyhome.ar" group="perfiles" plate="ink" sizes="(min-width: 1024px) 30vw, 100vw" />
+          <Figure src="pro-atv/prokids-profile.png" alt="Captura del perfil de Instagram de PRO KIDS" caption="PRO KIDS · @prokids.ar" group="perfiles" plate="ink" sizes="(min-width: 1024px) 30vw, 100vw" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- F · RESULTADOS SIN CHAMUYO -->
+  <section class="section proof" aria-labelledby="proof-title">
+    <div class="container proof-grid">
+      <div class="proof-phone">
+        <PhoneFrame src={featured.src} alt="Reel de VZH: ¿Listo para salir a la ruta?" postId={featured.id} group="destacado" showMeta={false} sizes="(min-width: 1024px) 26vw, 70vw" />
+      </div>
+      <div class="proof-copy">
+        <p class="label">Una pieza, un número</p>
+        <p class="big num">5.055</p>
+        <h2 id="proof-title" class="h3">Me gusta en este reel de VZH.</h2>
+        <p class="lead muted">«¿Listo para salir a la ruta?», producido por Digital Tie para <a href="/proyectos/vzh/">VZH</a>. El número corresponde a esta publicación y es el que muestra la captura; no es un promedio de la cuenta.</p>
+        <dl class="mini">
+          <div><dt class="label">Publicación</dt><dd>Reel · @baterias.vzh</dd></div>
+          <div><dt class="label">Visible en la captura</dt><dd class="num">5.055 Me gusta · 35 comentarios</dd></div>
+        </dl>
+        <a class="link-arrow" href="/proyectos/vzh/">Ver el caso VZH completo <span class="arrow" aria-hidden="true">→</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- G · CONSULTA -->
+  <section class="section surface-mist ask" id="consulta" aria-labelledby="ask-title">
+    <div class="container ask-grid">
+      <div class="ask-copy">
+        <p class="label">Consulta</p>
+        <h2 id="ask-title" class="h2">Hablemos de tu contenido.</h2>
+        <p class="lead muted">Contanos tu marca y en qué canales necesitás estar. Te proponemos un esquema de producción a medida.</p>
+      </div>
+      <ContactForm variant="contenidos" id="form-contenidos" />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero { padding-top: calc(var(--header-h) + clamp(1.5rem, 1rem + 3vw, 4rem)); margin-top: calc(var(--header-h) * -1); overflow: hidden; }
+  .hero-grid { display: grid; gap: var(--s-8); align-items: center; }
+  .hero-copy { display: grid; gap: var(--s-6); justify-items: start; }
+  .crumbs { color: var(--muted-on-dark); }
+  .crumbs a { color: #fff; font-weight: 600; text-decoration: none; }
+  .hero h1 { max-width: 9ch; }
+  .hero .lead { max-width: 36ch; color: #d6dce6; }
+  .ctas { display: flex; flex-wrap: wrap; gap: 12px; }
+  .surface-dark .btn--primary { --btn-bg: var(--blue); --btn-fg: #fff; --btn-bd: var(--blue); }
+  .surface-dark .btn--primary:hover { --btn-bg: #fff; --btn-fg: var(--ink); --btn-bd: #fff; }
+  .hero-phones { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); align-items: start; }
+  .hp2 { margin-top: 3rem; } .hp3 { margin-top: 1rem; }
+  .marquee { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: clamp(3rem, 2rem + 3vw, 5rem) auto 0; padding-block: 22px; border-top: 1px solid var(--rule); color: var(--muted-on-dark); font-weight: 700; font-size: clamp(1rem, .9rem + .5vw, 1.375rem); letter-spacing: -0.01em; }
+  .marquee li::before { content: ''; display: inline-block; width: .42em; height: .28em; margin-right: .5em; background: var(--blue-on-dark); clip-path: polygon(0 0, 100% 0, 82% 100%, 18% 100%); vertical-align: middle; }
+  @media (min-width: 1024px) {
+    .hero-grid { grid-template-columns: repeat(12, 1fr); column-gap: var(--gap); }
+    .hero-copy { grid-column: 1 / span 6; }
+    .hero-phones { grid-column: 7 / span 6; }
+  }
+
+  .diff-grid { display: grid; gap: var(--s-7); }
+  .diff-grid > div { display: grid; gap: var(--s-4); align-content: start; }
+  .diff-list { display: grid; gap: 0; margin: 0; border-top: 1px solid var(--ink); }
+  .diff-list li { display: grid; gap: 8px; padding: 1.5rem 0; border-bottom: 1px solid var(--line); }
+  @media (min-width: 1024px) { .diff-grid { grid-template-columns: 5fr 7fr; column-gap: calc(var(--gap) * 2); } }
+
+  .sec-head { display: grid; gap: var(--s-4); margin-bottom: var(--s-8); }
+  .steps { display: grid; grid-template-columns: 1fr; gap: 0 var(--gap); margin: 0; counter-reset: s; }
+  .steps li { display: grid; gap: 8px; padding: 1.5rem 0 2rem; border-top: 1px solid var(--line); position: relative; }
+  .step-n { font-size: clamp(2rem, 1.5rem + 1.5vw, 3rem); font-weight: 750; letter-spacing: -0.04em; color: var(--blue); line-height: 1; margin-bottom: 8px; }
+  @media (min-width: 640px) { .steps { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1100px) { .steps { grid-template-columns: repeat(4, 1fr); } }
+
+  .fmt-grid { display: grid; gap: var(--s-7); }
+  .fmt-intro { display: grid; gap: var(--s-5); align-content: start; }
+  .chan { margin-top: 8px; }
+  .fmt-list { display: grid; margin: 0; border-top: 1px solid var(--ink); }
+  .fmt-list > div { display: grid; gap: 6px; padding: 1.25rem 0; border-bottom: 1px solid var(--line); }
+  @media (min-width: 768px) { .fmt-list > div { grid-template-columns: 16rem 1fr; gap: var(--gap); } }
+  @media (min-width: 1024px) { .fmt-grid { grid-template-columns: 5fr 7fr; column-gap: calc(var(--gap) * 2); } .fmt-intro { position: sticky; top: calc(var(--header-h) + 2rem); align-self: start; } }
+
+  .gal-head { display: grid; gap: var(--s-5); margin-bottom: var(--s-7); }
+  .gal-head > div { display: grid; gap: var(--s-4); }
+  .gal-note { max-width: 52ch; }
+  @media (min-width: 1024px) { .gal-head { grid-template-columns: 7fr 5fr; column-gap: var(--gap); align-items: end; } }
+  .gal-filters { display: flex; flex-wrap: wrap; gap: 8px; }
+  .gf { display: inline-flex; gap: 8px; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,.25); background: transparent; color: #fff; font-weight: 600; font-size: .9375rem; }
+  .gf .num { font-size: .75rem; color: var(--muted-on-dark); }
+  .gf:hover { border-color: #fff; }
+  .gf[aria-pressed='true'] { background: #fff; color: var(--ink); border-color: #fff; }
+  .gf[aria-pressed='true'] .num { color: var(--muted); }
+  .gal-status { padding-block: 16px 28px; }
+  .gal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--s-7) var(--gap); margin: 0; }
+  .gal-grid li[hidden] { display: none; }
+  @media (min-width: 700px) { .gal-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 1100px) { .gal-grid { grid-template-columns: repeat(5, 1fr); } }
+  .piece { margin: 0; display: grid; gap: 10px; }
+  .piece figcaption { font-size: .875rem; }
+  .profiles { margin-top: var(--section); padding-top: 16px; border-top: 1px solid var(--rule); display: grid; gap: var(--s-5); }
+  .prof-grid { display: grid; gap: var(--gap); }
+  @media (min-width: 900px) { .prof-grid { grid-template-columns: repeat(3, 1fr); } }
+
+  .proof-grid { display: grid; gap: var(--s-8); align-items: center; }
+  .proof-phone { max-width: 340px; width: 100%; justify-self: center; }
+  .proof-copy { display: grid; gap: var(--s-4); justify-items: start; }
+  .big { font-size: clamp(4.5rem, 2rem + 10vw, 11rem); font-weight: 780; letter-spacing: -0.06em; line-height: .9; color: var(--blue); }
+  .proof-copy .lead { max-width: 44ch; }
+  .proof-copy .lead a { color: var(--ink); font-weight: 700; }
+  .mini { display: grid; margin: 8px 0; border-top: 1px solid var(--ink); width: 100%; max-width: 32rem; }
+  .mini > div { display: grid; grid-template-columns: 11rem 1fr; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .mini dd { font-weight: 600; }
+  @media (min-width: 1024px) { .proof-grid { grid-template-columns: 4fr 8fr; column-gap: calc(var(--gap) * 3); } }
+  @media (max-width: 479px) { .mini > div { grid-template-columns: 1fr; gap: 2px; } }
+
+  .ask-grid { display: grid; gap: var(--s-7); }
+  .ask-copy { display: grid; gap: var(--s-4); align-content: start; }
+  @media (min-width: 1024px) { .ask-grid { grid-template-columns: 5fr 7fr; column-gap: calc(var(--gap) * 2); } }
+</style>
+
+<script>
+  const btns = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-brand]'));
+  const lis = Array.from(document.querySelectorAll<HTMLElement>('[data-gal]'));
+  const st = document.querySelector<HTMLElement>('.gal-status')!;
+  btns.forEach((b) => b.addEventListener('click', () => {
+    const k = b.dataset.brand!;
+    btns.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    let n = 0;
+    lis.forEach((li) => { const show = k === 'all' || li.dataset.gal === k; li.hidden = !show; if (show) n++; });
+    st.textContent = `Mostrando ${n} publicaciones${k === 'all' ? '' : ` de ${b.firstChild?.textContent?.trim()}`}`;
+  }));
+</script>

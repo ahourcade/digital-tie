@@ -1,0 +1,219 @@
+---
+/**
+ * Formulario honesto:
+ *  - Con PUBLIC_FORM_ENDPOINT → envío real (POST JSON) con estados de carga, éxito y error.
+ *  - Sin endpoint → arma la consulta y abre el correo del usuario (nunca simula un envío).
+ */
+import { SITE } from '../data/site';
+interface Props { variant?: 'general' | 'contenidos'; id?: string; tone?: 'light' | 'dark' }
+const { variant = 'general', id = `form-${variant}`, tone = 'light' } = Astro.props;
+const endpoint = SITE.formEndpoint;
+const channels = ['Instagram', 'TikTok', 'Facebook', 'YouTube', 'Anuncios Meta / Google', 'Sitio web'];
+const services = ['Estrategia y consultoría', 'Branding y diseño', 'Sitio web o e-commerce', 'Producción de contenidos', 'Campañas y performance', 'Todavía no lo sé'];
+---
+<form
+  class:list={['cf', `tone-${tone}`]}
+  id={id}
+  novalidate
+  data-form={variant}
+  data-endpoint={endpoint}
+  data-email={SITE.email}
+  aria-describedby={`${id}-status`}
+>
+  <div class="grid">
+    {variant === 'contenidos' ? (
+      <>
+        <div class="field">
+          <label for={`${id}-marca`}>Marca o empresa</label>
+          <input id={`${id}-marca`} name="marca" type="text" autocomplete="organization" required />
+          <p class="err" id={`${id}-marca-err`} hidden>Contanos cuál es tu marca.</p>
+        </div>
+        <div class="field">
+          <label for={`${id}-nombre`}>Tu nombre</label>
+          <input id={`${id}-nombre`} name="nombre" type="text" autocomplete="name" required />
+          <p class="err" id={`${id}-nombre-err`} hidden>Ingresá tu nombre.</p>
+        </div>
+        <div class="field span-2">
+          <label for={`${id}-email`}>Correo</label>
+          <input id={`${id}-email`} name="email" type="email" autocomplete="email" inputmode="email" required />
+          <p class="err" id={`${id}-email-err`} hidden>Ingresá un correo válido.</p>
+        </div>
+        <fieldset class="field span-2 chips">
+          <legend>¿En qué canales necesitás contenido? <span class="opt">(opcional)</span></legend>
+          <div class="chip-row">
+            {channels.map((c, i) => (
+              <label class="chip"><input type="checkbox" name="canales" value={c} id={`${id}-c${i}`} /><span>{c}</span></label>
+            ))}
+          </div>
+        </fieldset>
+        <div class="field span-2">
+          <label for={`${id}-mensaje`}>Contanos brevemente qué necesitás <span class="opt">(opcional)</span></label>
+          <textarea id={`${id}-mensaje`} name="mensaje" rows="3"></textarea>
+        </div>
+      </>
+    ) : (
+      <>
+        <div class="field">
+          <label for={`${id}-nombre`}>Nombre</label>
+          <input id={`${id}-nombre`} name="nombre" type="text" autocomplete="name" required />
+          <p class="err" id={`${id}-nombre-err`} hidden>Ingresá tu nombre.</p>
+        </div>
+        <div class="field">
+          <label for={`${id}-empresa`}>Empresa o marca</label>
+          <input id={`${id}-empresa`} name="empresa" type="text" autocomplete="organization" />
+        </div>
+        <div class="field">
+          <label for={`${id}-email`}>Correo</label>
+          <input id={`${id}-email`} name="email" type="email" autocomplete="email" inputmode="email" required />
+          <p class="err" id={`${id}-email-err`} hidden>Ingresá un correo válido.</p>
+        </div>
+        <div class="field">
+          <label for={`${id}-servicio`}>¿Qué necesitás?</label>
+          <select id={`${id}-servicio`} name="servicio">
+            {services.map((s) => <option>{s}</option>)}
+          </select>
+        </div>
+        <div class="field span-2">
+          <label for={`${id}-mensaje`}>Contanos el proyecto</label>
+          <textarea id={`${id}-mensaje`} name="mensaje" rows="4" required></textarea>
+          <p class="err" id={`${id}-mensaje-err`} hidden>Escribí unas líneas sobre el proyecto.</p>
+        </div>
+      </>
+    )}
+    <div class="hp" aria-hidden="true">
+      <label for={`${id}-web`}>No completar</label>
+      <input id={`${id}-web`} name="_gotcha" type="text" tabindex="-1" autocomplete="off" />
+    </div>
+  </div>
+  <div class="foot">
+    <button class="btn btn--primary" type="submit">
+      <span class="btn-label">{endpoint ? 'Enviar consulta' : 'Enviar por correo'}</span>
+      <span class="arrow" aria-hidden="true">→</span>
+    </button>
+    <p class="note small">
+      {endpoint
+        ? 'Usamos tus datos solo para responder esta consulta.'
+        : 'Al enviar se abre tu aplicación de correo con la consulta lista.'}{' '}
+      <a href="/privacidad/">Privacidad</a>.
+    </p>
+  </div>
+  <p class="status" id={`${id}-status`} role="status" aria-live="polite"></p>
+</form>
+
+<style>
+  .cf { display: grid; gap: var(--s-6); }
+  .grid { display: grid; gap: var(--s-5) var(--gap); grid-template-columns: 1fr; }
+  .field { display: grid; gap: 8px; margin: 0; padding: 0; border: 0; min-width: 0; }
+  label, legend { font-weight: 700; font-size: .9375rem; padding: 0; }
+  .opt { font-weight: 500; color: var(--fg-muted); }
+  input[type='text'], input[type='email'], select, textarea {
+    width: 100%; min-height: 50px; padding: 12px 14px; border-radius: 6px;
+    border: 1px solid var(--line-strong); background: var(--white); color: var(--ink);
+    font-size: 1rem; transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+  }
+  textarea { resize: vertical; min-height: 110px; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,102,255,.18); }
+  [aria-invalid='true'] { border-color: #c62828 !important; }
+  .err { color: #b3261e; font-size: .875rem; font-weight: 600; }
+  .tone-dark .err { color: #ffb4ab; }
+  .tone-dark input[type='text'], .tone-dark input[type='email'], .tone-dark select, .tone-dark textarea {
+    background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.22); color: #fff;
+  }
+  .tone-dark select option { color: var(--ink); }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+  .chip { position: relative; display: inline-flex; }
+  .chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+  .chip span {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 999px;
+    border: 1px solid var(--line-strong); font-weight: 600; font-size: .9375rem; transition: all var(--t-fast) var(--ease);
+  }
+  .tone-dark .chip span { border-color: rgba(255,255,255,.25); }
+  .chip input:checked + span { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .chip input:focus-visible + span { outline: 2px solid var(--blue); outline-offset: 2px; }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .foot { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-4) var(--s-5); }
+  .note { color: var(--fg-muted); max-width: 44ch; }
+  .status { font-weight: 600; min-height: 1.5em; }
+  .status[data-state='ok'] { color: #1b7f3b; }
+  .tone-dark .status[data-state='ok'] { color: #7ee2a0; }
+  .status[data-state='error'] { color: #b3261e; }
+  .tone-dark .status[data-state='error'] { color: #ffb4ab; }
+  button[aria-busy='true'] { opacity: .7; cursor: progress; }
+  @media (min-width: 720px) {
+    .grid { grid-template-columns: 1fr 1fr; }
+    .span-2 { grid-column: 1 / -1; }
+  }
+</style>
+
+<script>
+  import { track } from '../scripts/analytics';
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  document.querySelectorAll<HTMLFormElement>('form[data-form]').forEach((form) => {
+    const status = form.querySelector<HTMLElement>('.status')!;
+    const btn = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+    const label = btn.querySelector<HTMLElement>('.btn-label')!;
+    const endpoint = form.dataset.endpoint;
+    const variant = form.dataset.form!;
+
+    const setErr = (el: HTMLInputElement | HTMLTextAreaElement, bad: boolean) => {
+      const err = form.querySelector<HTMLElement>(`#${el.id}-err`);
+      el.setAttribute('aria-invalid', String(bad));
+      if (err) {
+        err.hidden = !bad;
+        if (bad) el.setAttribute('aria-describedby', err.id); else el.removeAttribute('aria-describedby');
+      }
+    };
+    const validate = () => {
+      let first: HTMLElement | null = null;
+      form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[required]').forEach((el) => {
+        const v = el.value.trim();
+        const bad = !v || (el.type === 'email' && !EMAIL_RE.test(v));
+        setErr(el, bad);
+        if (bad && !first) first = el;
+      });
+      return first as HTMLElement | null;
+    };
+    form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[required]').forEach((el) =>
+      el.addEventListener('blur', () => { if (el.getAttribute('aria-invalid') === 'true') validate(); }),
+    );
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      status.textContent = ''; status.removeAttribute('data-state');
+      const bad = validate();
+      if (bad) { bad.focus(); status.dataset.state = 'error'; status.textContent = 'Revisá los campos marcados.'; return; }
+      const fd = new FormData(form);
+      if (fd.get('_gotcha')) return; // bot
+      const data: Record<string, string> = { formulario: variant, pagina: location.pathname };
+      fd.forEach((v, k) => {
+        if (k === '_gotcha') return;
+        data[k] = data[k] ? `${data[k]}, ${v}` : String(v);
+      });
+
+      if (!endpoint) {
+        const subject = variant === 'contenidos' ? `Consulta de contenidos — ${data.marca ?? ''}` : `Consulta — ${data.empresa || data.nombre || ''}`;
+        const body = Object.entries(data).filter(([k]) => !['formulario', 'pagina'].includes(k)).map(([k, v]) => `${k[0].toUpperCase() + k.slice(1)}: ${v}`).join('\n');
+        track('form_mailto', { form: variant });
+        status.textContent = `Abrimos tu aplicación de correo con la consulta. Si no se abre, escribinos a ${form.dataset.email}.`;
+        location.href = `mailto:${form.dataset.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        return;
+      }
+
+      btn.setAttribute('aria-busy', 'true'); btn.disabled = true; label.textContent = 'Enviando…';
+      try {
+        const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(data) });
+        if (!res.ok) throw new Error(String(res.status));
+        form.reset();
+        status.dataset.state = 'ok';
+        status.textContent = '¡Gracias! Recibimos tu consulta y te respondemos a la brevedad.';
+        track('form_submit_success', { form: variant });
+      } catch {
+        status.dataset.state = 'error';
+        status.textContent = `No pudimos enviar la consulta. Probá de nuevo o escribinos a ${form.dataset.email}.`;
+        track('form_submit_error', { form: variant });
+      } finally {
+        btn.removeAttribute('aria-busy'); btn.disabled = false; label.textContent = 'Enviar consulta';
+      }
+    });
+  });
+</script>

@@ -1,0 +1,62 @@
+---
+import Plate from './Plate.astro';
+import { Image } from 'astro:assets';
+import { img } from '../lib/images';
+import { categoryLabel, type Project } from '../data/projects';
+interface Props { project: Project; index?: number; size?: 'xl' | 'lg' | 'md' | 'sm'; headingLevel?: 'h2' | 'h3'; priority?: boolean; sizes?: string }
+const { project: p, index, size = 'md', headingLevel = 'h3', priority = false, sizes } = Astro.props;
+const H = headingLevel;
+const ratio = size === 'xl' ? '16 / 10' : size === 'sm' ? '4 / 3' : '3 / 2';
+const defaultSizes = size === 'xl' ? '(min-width: 1024px) 66vw, 100vw' : size === 'lg' ? '(min-width: 1024px) 50vw, 100vw' : '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw';
+---
+<article
+  class:list={['card', `card--${size}`]}
+  data-card
+  data-cats={p.categories.join(' ')}
+  data-name={`${p.client} ${p.industry}`.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')}
+>
+  <div class="media">
+    <Plate src={p.cover} alt={p.coverAlt} plate={p.plate} fit={p.coverFit ?? 'contain'} ratio={ratio} sizes={sizes ?? defaultSizes} priority={priority} />
+    {p.logo && (
+      <span class:list={['logo-chip', p.logo.onDark && 'logo-chip--dark']}>
+        <Image src={img(p.logo.src)} alt={p.logo.alt} height={28} densities={[1, 2]} loading="lazy" />
+      </span>
+    )}
+  </div>
+  <div class="body">
+    <div class="meta">
+      {typeof index === 'number' && <span class="label num">{String(index).padStart(2, '0')}</span>}
+      <ul class="tags" role="list" aria-label="Disciplinas">
+        {p.categories.map((c) => <li class="tag">{categoryLabel(c)}</li>)}
+      </ul>
+    </div>
+    <H class="title"><a href={`/proyectos/${p.slug}/`} data-track="click_project" data-track-label={p.slug}>{p.client}</a></H>
+    <p class="headline">{p.headline}</p>
+    <span class="more" aria-hidden="true">Ver caso <span class="arrow">→</span></span>
+  </div>
+</article>
+<style>
+  .card { position: relative; display: grid; gap: 18px; align-content: start; }
+  .media { position: relative; }
+  .logo-chip {
+    position: absolute; left: 12px; top: 12px; display: inline-flex; align-items: center;
+    padding: 8px 12px; background: #fff; border-radius: 6px; box-shadow: 0 1px 2px rgba(12,21,37,.08);
+  }
+  .logo-chip :global(img) { height: 20px; width: auto; }
+  .logo-chip--dark { background: #0c1525; }
+  .body { display: grid; gap: 8px; }
+  .meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .title { font-size: var(--fs-h4); letter-spacing: -0.02em; line-height: 1.15; }
+  .card--xl .title, .card--lg .title { font-size: var(--fs-h3); }
+  .title a { text-decoration: none; }
+  .title a::after { content: ''; position: absolute; inset: 0; z-index: 1; border-radius: var(--radius); }
+  .headline { color: var(--fg-muted); max-width: 46ch; }
+  .more { font-weight: 700; font-size: .9375rem; display: inline-flex; gap: .4em; margin-top: 4px; }
+  .more .arrow { transition: transform var(--t) var(--ease); }
+  .card:hover .more .arrow, .card:focus-within .more .arrow { transform: translateX(4px); }
+  .card:hover .title a, .card:focus-within .title a { color: var(--blue); }
+  .card:hover :global(.plate img) { transform: scale(1.015); }
+  .title a:focus-visible { outline: none; }
+  .title a:focus-visible::after { outline: 2px solid var(--blue); outline-offset: 4px; }
+  @media (prefers-reduced-motion: reduce) { .card:hover :global(.plate img) { transform: none; } }
+</style>

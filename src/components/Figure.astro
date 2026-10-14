@@ -1,0 +1,30 @@
+---
+/** Imagen de galería con ampliación accesible (sin recortes, sin agrandar más allá del original). */
+import { Image, getImage } from 'astro:assets';
+import { img, widthsFor } from '../lib/images';
+interface Props { src: string; alt: string; caption?: string; group?: string; plate?: 'mist' | 'white' | 'ink'; sizes?: string; maxHeight?: string }
+const { src, alt, caption, group, plate = 'mist', sizes = '(min-width: 1024px) 50vw, 100vw', maxHeight = '78vh' } = Astro.props;
+const meta = img(src);
+const full = await getImage({ src: meta, width: meta.width, format: meta.format === 'png' ? 'webp' : 'webp', quality: 90 });
+---
+<figure class:list={['fig', `fig--${plate}`]} style={`--nat:${meta.width}px;--mh:${maxHeight}`}>
+  <button type="button" class="zoom" data-lightbox data-group={group} data-src={full.src} data-w={meta.width} data-h={meta.height} data-alt={alt} data-caption={caption ?? alt} aria-label={`Ampliar: ${alt}`}>
+    <span class="pic"><Image src={meta} alt={alt} widths={widthsFor(meta)} sizes={sizes} format="webp" quality={84} loading="lazy" /></span>
+    <span class="zoom-ic" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="16" height="16"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+    </span>
+  </button>
+  {caption && <figcaption class="small muted">{caption}</figcaption>}
+</figure>
+<style>
+  .fig { margin: 0; display: grid; gap: 10px; align-content: start; }
+  .zoom { position: relative; display: grid; place-items: center; width: 100%; padding: clamp(12px, 3vw, 40px); border: 0; border-radius: var(--radius); cursor: zoom-in; }
+  .fig--mist .zoom { background: var(--mist); }
+  .fig--white .zoom { background: #fff; box-shadow: inset 0 0 0 1px var(--line); }
+  .fig--ink .zoom { background: #0a111d; }
+  .zoom .pic { display: block; }
+  .zoom :global(img) { width: auto; max-width: min(100%, var(--nat)); max-height: var(--mh); height: auto; object-fit: contain; }
+  .zoom-ic { position: absolute; right: 10px; bottom: 10px; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: rgba(12,21,37,.78); color: #fff; opacity: 0; transition: opacity var(--t) var(--ease); }
+  .zoom:hover .zoom-ic, .zoom:focus-visible .zoom-ic { opacity: 1; }
+  @media (hover: none) { .zoom-ic { opacity: 1; } }
+</style>

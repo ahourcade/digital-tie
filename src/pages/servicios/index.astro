@@ -1,0 +1,85 @@
+---
+import Base from '../../layouts/Base.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import { SERVICES } from '../../data/services';
+import { PROJECTS } from '../../data/projects';
+
+const examples = (cat?: string) => (cat ? PROJECTS.filter((p) => p.categories.includes(cat as any) && !p.archive).slice(0, 2) : []);
+const schema = SERVICES.map((s) => ({
+  '@context': 'https://schema.org', '@type': 'Service', name: s.name, description: s.description,
+  provider: { '@type': 'Organization', name: 'Digital Tie', url: Astro.site?.href },
+  url: new URL(s.href ?? `/servicios/#${s.slug}`, Astro.site).href,
+}));
+---
+<Base
+  title="Servicios — Estrategia, branding, web, contenidos y performance"
+  description="Servicios de Digital Tie: estrategia digital y consultoría, branding y diseño, sitios web y e-commerce, producción integral de contenidos y campañas en Meta y Google."
+  breadcrumbs={[{ name: 'Servicios', href: '/servicios/' }]}
+  schema={schema}
+>
+  <section class="intro container">
+    <p class="label">Servicios</p>
+    <h1 class="display">Pensar, diseñar <span class="nowrap">e implementar<span class="knot" aria-hidden="true"></span></span></h1>
+    <p class="lead muted">Cinco servicios que se pueden contratar por separado o combinados. En todos aplicamos el mismo método: entender, diseñar, producir y medir.</p>
+    <nav aria-label="Índice de servicios">
+      <ol class="toc" role="list">
+        {SERVICES.map((s) => <li><a href={s.href ?? `#${s.slug}`}><span class="label num">{s.n}</span> {s.name}</a></li>)}
+      </ol>
+    </nav>
+  </section>
+
+  {SERVICES.map((s, i) => (
+    <section id={s.slug} class:list={['svc section', i % 2 === 1 && 'surface-white', s.href && 'svc--feature']} aria-labelledby={`t-${s.slug}`}>
+      <div class="container svc-grid">
+        <div class="svc-head">
+          <p class="label num">{s.n} / 0{SERVICES.length}</p>
+          <h2 class="h2" id={`t-${s.slug}`}>{s.name}</h2>
+          <p class="lead">{s.short}</p>
+        </div>
+        <div class="svc-body">
+          <p>{s.description}</p>
+          <ul class="incl" role="list">{s.includes.map((x) => <li>{x}</li>)}</ul>
+          <div class="svc-links">
+            {s.href && <a class="btn btn--primary" href={s.href}>Ver el servicio completo <span class="arrow" aria-hidden="true">→</span></a>}
+            {s.category && <a class="link-arrow" href={`/proyectos/?cat=${s.category}`}>Ver proyectos relacionados <span class="arrow" aria-hidden="true">→</span></a>}
+            {!s.href && <a class="link-arrow" href="/contacto/" data-track="cta_contact" data-track-label={`servicio-${s.slug}`}>Consultar <span class="arrow" aria-hidden="true">→</span></a>}
+          </div>
+        </div>
+        {examples(s.category).length > 0 && (
+          <ul class="ex" role="list" aria-label={`Ejemplos de ${s.name}`}>
+            {examples(s.category).map((p) => <li><ProjectCard project={p} size="md" /></li>)}
+          </ul>
+        )}
+      </div>
+    </section>
+  ))}
+
+  <CtaBand />
+</Base>
+
+<style>
+  .intro { padding-block: clamp(2.5rem, 2rem + 4vw, 6rem) var(--section); display: grid; gap: var(--s-6); }
+  .intro h1 { max-width: 12ch; }
+  .intro .lead { max-width: 48ch; }
+  .toc { display: grid; margin: var(--s-4) 0 0; border-top: 1px solid var(--ink); max-width: 760px; }
+  .toc a { display: flex; gap: 16px; align-items: baseline; padding: 14px 0; border-bottom: 1px solid var(--line); text-decoration: none; font-weight: 700; font-size: var(--fs-h4); }
+  .toc a:hover { color: var(--blue); }
+  .svc { border-top: 1px solid var(--line); }
+  .svc-grid { display: grid; gap: var(--s-7); }
+  .svc-head { display: grid; gap: var(--s-4); align-content: start; }
+  .svc-head .lead { color: var(--fg-muted); max-width: 30ch; }
+  .svc-body { display: grid; gap: var(--s-5); align-content: start; font-size: var(--fs-lead); max-width: 52ch; }
+  .incl { display: grid; margin: 0; border-top: 1px solid var(--ink); font-size: 1rem; }
+  .incl li { padding: 12px 0; border-bottom: 1px solid var(--line); font-weight: 600; display: flex; gap: 12px; align-items: baseline; }
+  .incl li::before { content: ''; flex: none; width: 10px; height: 7px; background: var(--blue); clip-path: polygon(0 0, 100% 0, 82% 100%, 18% 100%); }
+  .svc-links { display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: center; font-size: 1rem; }
+  .ex { display: grid; gap: var(--gap); margin: 0; }
+  @media (min-width: 700px) { .ex { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1024px) {
+    .svc-grid { grid-template-columns: repeat(12, 1fr); column-gap: var(--gap); }
+    .svc-head { grid-column: 1 / span 5; }
+    .svc-body { grid-column: 7 / span 6; }
+    .ex { grid-column: 1 / -1; margin-top: var(--s-6); }
+  }
+</style>

@@ -1,0 +1,24 @@
+---
+interface Props { index?: string; kicker: string; title: string; text?: string; id?: string; level?: 'h1' | 'h2' }
+const { index, kicker, title, text, id, level = 'h2' } = Astro.props;
+const H = level;
+---
+<header class="sh" data-reveal>
+  <p class="label kicker"><span class="num">{index && `${index} — `}</span>{kicker}</p>
+  <H class="h2 sh-title" id={id} set:html={title} />
+  {text && <p class="lead muted sh-text">{text}</p>}
+  <slot />
+</header>
+<style>
+  .sh { display: grid; gap: var(--s-5); grid-template-columns: 1fr; margin-bottom: clamp(2.5rem, 2rem + 3vw, 5rem); }
+  .kicker { display: flex; align-items: center; gap: .6em; padding-top: 14px; border-top: 1px solid var(--rule); }
+  .sh-title { max-width: 16ch; }
+  .sh-title :global(em) { font-style: normal; color: var(--accent); }
+  .sh-text { max-width: 42ch; }
+  @media (min-width: 1024px) {
+    .sh { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap); align-items: end; }
+    .kicker { grid-column: 1 / -1; }
+    .sh-title { grid-column: 1 / span 7; }
+    .sh-text { grid-column: 9 / span 4; }
+  }
+</style>
