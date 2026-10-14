@@ -296,6 +296,36 @@ export const PROJECTS: Project[] = [
     seoDescription: 'Caso Starnet: diseño y desarrollo del sitio de una empresa de conectividad e instalación de Starlink.',
   },
 
+  /* ───────────────────────── PRO ENERGY HOME (tienda) ───────────────────────── */
+  {
+    slug: 'proenergy-home-tienda',
+    client: 'PRO ENERGY Home',
+    headline: 'Tienda online de energía solar y equipamiento para el hogar',
+    summary:
+      'Diseñamos y desarrollamos la tienda online de PRO ENERGY Home sobre Tiendanube: catálogo por categorías, productos destacados con precios en cuotas y descuento por transferencia, y asesoramiento por WhatsApp.',
+    industry: 'Energía y hogar',
+    role: 'Diseño y desarrollo e-commerce',
+    categories: ['ecommerce', 'web'],
+    cover: 'proenergy-home/cover.png',
+    coverAlt: 'Home de la tienda PRO ENERGY Home: importadores directos con más de 20 años en Argentina',
+    plate: 'ink',
+    coverFit: 'cover',
+    link: { label: 'proenergyhome.com.ar', url: 'https://proenergyhome.com.ar/' },
+    social: [{ label: 'Instagram @proenergyhome.ar', url: 'https://www.instagram.com/proenergyhome.ar/' }],
+    context: [
+      'PRO ENERGY Home es una de las marcas de PRO ATV Motorsports. Vende equipamiento para la casa y soluciones de energía solar: heladeras y freezers solares, aires acondicionados solares, paneles, estaciones de energía, iluminación, pisos vinílicos y sillas.',
+      'La tienda ordena ese catálogo amplio en categorías visuales, destaca productos con precio en cuotas y precio con transferencia, y suma confianza con preguntas frecuentes, beneficios de compra y un acceso directo a asesoramiento por WhatsApp.',
+    ],
+    deliverables: [
+      'Diseño de la tienda online en Tiendanube',
+      'Arquitectura de categorías y catálogo',
+      'Home con banners, destacados y beneficios de compra',
+      'Preguntas frecuentes y asesoramiento por WhatsApp',
+    ],
+    gallery: [{ kind: 'web', src: 'proenergy-home/home-full.png', alt: 'Captura completa de la home de la tienda PRO ENERGY Home', caption: 'Home completa de proenergyhome.com.ar' }],
+    seoDescription: 'Caso PRO ENERGY Home: diseño y desarrollo de la tienda online en Tiendanube para una marca de energía solar y equipamiento para el hogar.',
+  },
+
   /* ───────────────────────── CYT ───────────────────────── */
   {
     slug: 'cyt-comunicaciones',

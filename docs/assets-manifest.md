@@ -81,6 +81,8 @@ Columnas: archivo · cliente/carpeta · dimensiones · peso · calidad estimada 
 | `pro-atv/proone-post-2.png` | pro-atv | 283×378 | 243 KB | baja (<500px) | NO (no referenciado) | ZIP V2 / presentaciones (ver auditoría) |
 | `pro-atv/proone-post-3.png` | pro-atv | 282×380 | 222 KB | baja (<500px) | NO (no referenciado) | ZIP V2 / presentaciones (ver auditoría) |
 | `pro-atv/proone-profile.png` | pro-atv | 1410×903 | 1410 KB | alta | sí | Captura de perfil de Instagram (ZIP V2) |
+| `proenergy-home/cover.png` | proenergy-home | 1920×1022 | 1255 KB | alta | sí | ZIP V2 / presentaciones (ver auditoría) |
+| `proenergy-home/home-full.png` | proenergy-home | 1920×6304 | 5412 KB | alta | sí | ZIP V2 / presentaciones (ver auditoría) |
 | `recetario-ivess/cover.webp` | recetario-ivess | 480×320 | 27 KB | baja (<500px) | sí | ZIP V2 / presentaciones (ver auditoría) |
 | `recetario-ivess/home-full.png` | recetario-ivess | 480×2048 | 1170 KB | baja (<500px) | sí | ZIP V2 / presentaciones (ver auditoría) |
 | `recetario-ivess/logo.png` | recetario-ivess | 845×330 | 54 KB | media | sí | ZIP V2 / presentaciones (ver auditoría) |
