@@ -17,7 +17,7 @@ const schema = [{ '@context': 'https://schema.org', '@type': 'ContactPage', name
       <p class="lead muted">Contanos en qué punto está tu marca y qué te gustaría lograr. Leemos cada consulta y respondemos con una propuesta de próximos pasos.</p>
       <dl class="ways">
         <div><dt class="label">Correo</dt><dd><a href={`mailto:${SITE.email}`}>{SITE.email}</a></dd></div>
-        {SITE.whatsapp && <div><dt class="label">WhatsApp</dt><dd><a href={`https://wa.me/${SITE.whatsapp}`} target="_blank" rel="noopener noreferrer">Escribinos por WhatsApp ↗</a></dd></div>}
+        {SITE.whatsapp && <div><dt class="label">WhatsApp</dt><dd><a href={`https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(SITE.whatsappMessage)}`} target="_blank" rel="noopener noreferrer">Escribinos por WhatsApp ↗</a></dd></div>}
         <div><dt class="label">¿Buscás contenidos?</dt><dd><a href="/servicios/produccion-de-contenidos/#consulta">Consulta de producción de contenidos →</a></dd></div>
       </dl>
     </div>

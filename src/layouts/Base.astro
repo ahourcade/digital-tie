@@ -5,6 +5,7 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Lightbox from '../components/Lightbox.astro';
 import Consent from '../components/Consent.astro';
+import WhatsAppFloat from '../components/WhatsAppFloat.astro';
 import { SITE } from '../data/site';
 
 interface Crumb { name: string; href: string }
@@ -78,6 +79,7 @@ if (breadcrumbs?.length) {
     </main>
     <Footer />
     <Lightbox />
+    <WhatsAppFloat />
     {SITE.gtmId && <Consent gtmId={SITE.gtmId} />}
     <script>
       import '../scripts/core';

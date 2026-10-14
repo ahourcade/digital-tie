@@ -11,7 +11,7 @@ const year = new Date().getFullYear();
       <div class="contact">
         <p class="label">Nuevos proyectos</p>
         <a class="mail" href={`mailto:${SITE.email}`}>{SITE.email}</a>
-        {SITE.whatsapp && <a class="link-arrow" href={`https://wa.me/${SITE.whatsapp}`} rel="noopener noreferrer" target="_blank">WhatsApp <span class="arrow" aria-hidden="true">↗</span></a>}
+        {SITE.whatsapp && <a class="link-arrow" href={`https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(SITE.whatsappMessage)}`} rel="noopener noreferrer" target="_blank">WhatsApp <span class="arrow" aria-hidden="true">↗</span></a>}
         <a class="btn" href="/contacto/" data-track="cta_contact" data-track-label="footer">Hablemos <span class="arrow" aria-hidden="true">→</span></a>
       </div>
     </div>

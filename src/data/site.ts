@@ -10,7 +10,8 @@ export const SITE = {
   lang: 'es-AR',
   // A confirmar antes de publicar: correo comercial, WhatsApp y redes verificadas.
   email: import.meta.env.PUBLIC_CONTACT_EMAIL || 'ahourcade@digitaltie.net',
-  whatsapp: import.meta.env.PUBLIC_WHATSAPP || '',
+  whatsapp: import.meta.env.PUBLIC_WHATSAPP || '5491131190914',
+  whatsappMessage: 'Te contacto desde el sitio web',
   formEndpoint: import.meta.env.PUBLIC_FORM_ENDPOINT || '',
   gtmId: import.meta.env.PUBLIC_GTM_ID || '',
   // Redes de Digital Tie: completar solo con perfiles verificados.
