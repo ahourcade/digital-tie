@@ -13,7 +13,7 @@ const full = await getImage({ src: meta, width: meta.width, format: 'webp', qual
 const post = postId ? postById(postId) : undefined;
 const brand = post ? BRANDS[post.brand] : undefined;
 const caption = post
-  ? `${brand!.label} · ${post.format}${post.likes ? ` · ${post.likes} Me gusta` : ''}${post.comments ? ` · ${post.comments} comentarios` : ''} (captura de la publicación)`
+  ? `${brand!.label} · ${post.format}${post.likes ? ` · ${post.likes} Me gusta` : ''}${post.comments ? ` · ${post.comments} comentarios` : ''}${post.shares ? ` · ${post.shares} compartidos` : ''} (captura de la publicación)`
   : alt;
 ---
 <figure class:list={['phone', `tone-${tone}`]}>
@@ -23,11 +23,17 @@ const caption = post
   {showMeta && post && (
     <figcaption>
       <span class="who">{brand!.label} <span class="fmt">· {post.format}</span></span>
-      {(post.likes || post.comments) && (
+      {(post.likes || post.comments || post.shares) && (
         <span class="metrics num">
           {post.likes && <span><strong>{post.likes}</strong> Me gusta</span>}
           {post.comments && <span><strong>{post.comments}</strong> comentarios</span>}
+          {post.shares && <span><strong>{post.shares}</strong> compartidos</span>}
         </span>
+      )}
+      {post.url && (
+        <a class="ig" href={post.url} target="_blank" rel="noopener noreferrer" data-track="click_outbound" data-track-label={`instagram-${post.id}`}>
+          Ver en Instagram <span aria-hidden="true">↗</span><span class="visually-hidden"> (se abre en una pestaña nueva)</span>
+        </a>
       )}
       {post.note && <span class="note">{post.note}</span>}
     </figcaption>
@@ -50,4 +56,6 @@ const caption = post
   .metrics { display: flex; flex-wrap: wrap; gap: 4px 12px; color: var(--fg-muted); }
   .metrics strong { color: var(--fg); font-weight: 700; }
   .note { color: var(--fg-muted); font-size: .8125rem; }
+  .ig { justify-self: start; margin-top: 4px; font-weight: 700; font-size: .8125rem; text-decoration: none; border-bottom: 1px solid currentColor; padding: 6px 0 2px; color: var(--fg); }
+  .ig:hover { color: var(--accent); }
 </style>
