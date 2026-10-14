@@ -189,6 +189,12 @@ const services = ['Estrategia y consultoría', 'Branding y diseño', 'Sitio web 
         if (k === '_gotcha') return;
         data[k] = data[k] ? `${data[k]}, ${v}` : String(v);
       });
+      // Metadatos para FormSubmit: asunto, formato de tabla y sin captcha (hay honeypot).
+      const extras: Record<string, string> = {
+        _subject: variant === 'contenidos' ? `Nueva consulta de contenidos — ${data.marca ?? ''} (web)` : `Nueva consulta — ${data.empresa || data.nombre || ''} (web)`,
+        _template: 'table',
+        _captcha: 'false',
+      };
 
       if (!endpoint) {
         const subject = variant === 'contenidos' ? `Consulta de contenidos — ${data.marca ?? ''}` : `Consulta — ${data.empresa || data.nombre || ''}`;
@@ -201,8 +207,10 @@ const services = ['Estrategia y consultoría', 'Branding y diseño', 'Sitio web 
 
       btn.setAttribute('aria-busy', 'true'); btn.disabled = true; label.textContent = 'Enviando…';
       try {
-        const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(data) });
+        const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ ...data, ...extras }) });
         if (!res.ok) throw new Error(String(res.status));
+        const json = await res.json().catch(() => ({}));
+        if (json && 'success' in json && String(json.success) !== 'true') throw new Error(String(json.message || 'rechazado'));
         form.reset();
         status.dataset.state = 'ok';
         status.textContent = '¡Gracias! Recibimos tu consulta y te respondemos a la brevedad.';

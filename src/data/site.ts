@@ -12,7 +12,8 @@ export const SITE = {
   email: import.meta.env.PUBLIC_CONTACT_EMAIL || 'ahourcade@digitaltie.net',
   whatsapp: import.meta.env.PUBLIC_WHATSAPP || '5491131190914',
   whatsappMessage: 'Te contacto desde el sitio web',
-  formEndpoint: import.meta.env.PUBLIC_FORM_ENDPOINT || '',
+  // Envío de formularios vía FormSubmit (formsubmit.co). Requiere activar una vez desde el mail que llega a la casilla.
+  formEndpoint: import.meta.env.PUBLIC_FORM_ENDPOINT || 'https://formsubmit.co/ajax/ahourcade@digitaltie.net',
   gtmId: import.meta.env.PUBLIC_GTM_ID || '',
   // Redes de Digital Tie: completar solo con perfiles verificados.
   social: [] as { label: string; url: string }[],
