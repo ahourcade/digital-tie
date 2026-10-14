@@ -4,13 +4,13 @@
  * Son cortes al momento de la captura (fecha no registrada en el archivo):
  * no equivalen a alcance, visualizaciones, conversiones ni resultados agregados.
  */
-export type BrandKey = 'vzh' | 'homer' | 'proenergy' | 'prokids';
+export type BrandKey = 'vzh' | 'homer' | 'proenergy' | 'prokids' | 'proone';
 
 export interface Post {
   id: string;
   brand: BrandKey;
   src: string; // ruta relativa a src/assets/work/
-  format: 'Reel' | 'Carrusel';
+  format: 'Reel' | 'Carrusel' | 'Publicación';
   hook: string; // texto visible en la pieza
   caption: string; // inicio del copy visible en la captura
   likes?: string;
@@ -24,6 +24,7 @@ export const BRANDS: Record<BrandKey, { label: string; handle: string; url: stri
   homer: { label: 'Homer & Co', handle: '@homerandco', url: 'https://www.instagram.com/homerandco/', project: 'homer-and-co' },
   proenergy: { label: 'PRO ENERGY Home', handle: '@proenergyhome.ar', url: 'https://www.instagram.com/proenergyhome.ar/', project: 'pro-atv' },
   prokids: { label: 'PRO KIDS', handle: '@prokids.ar', url: 'https://www.instagram.com/prokids.ar/', project: 'pro-atv' },
+  proone: { label: 'PRO ONE', handle: '@proonemotos.ar', url: 'https://www.instagram.com/proonemotos.ar/', project: 'pro-atv' },
 };
 
 export const POSTS: Post[] = [
@@ -51,6 +52,20 @@ export const POSTS: Post[] = [
   { id: 'prokids-18', brand: 'prokids', src: 'pro-atv/ig-prokids-18.jpg', format: 'Reel', hook: 'Hilux', caption: 'Esta navidad va a ser épica con la Toyota…', likes: '360', comments: '71', project: 'pro-atv' },
   { id: 'prokids-19', brand: 'prokids', src: 'pro-atv/ig-prokids-19.jpg', format: 'Reel', hook: '«Hay que mantener la plata en movimiento»', caption: 'Me dijeron que ponga la plata en movimiento…', likes: '89', comments: '23', project: 'pro-atv' },
   { id: 'prokids-20', brand: 'prokids', src: 'pro-atv/ig-prokids-20.jpg', format: 'Reel', hook: 'Su primera moto', caption: 'Esta no es una bici común. Es su próxima…', likes: '372', comments: '56', project: 'pro-atv' },
+  // Lote 2 (14/10/2026) — capturas enviadas por Digital Tie
+  { id: 'proenergy-24', brand: 'proenergy', src: 'pro-atv/ig-proenergy-24.jpg', format: 'Reel', hook: 'Sorteo Día del Padre: ganá una silla gamer', caption: 'Ganate una silla gamer PRO ENERGY para el Día del Padre…', likes: '947', comments: '3.919', note: 'Sorteo: comentar es parte de la mecánica de participación.', project: 'pro-atv' },
+  { id: 'proenergy-22', brand: 'proenergy', src: 'pro-atv/ig-proenergy-22.jpg', format: 'Reel', hook: 'Heladera de 268 l', caption: 'Frío asegurado, aún sin conexión eléctrica…', likes: '942', comments: '51', project: 'pro-atv' },
+  { id: 'proenergy-25', brand: 'proenergy', src: 'pro-atv/ig-proenergy-25.jpg', format: 'Carrusel', hook: 'Kit solar: freezer + paneles', caption: '¿Sin red eléctrica? No te quedes sin refrigeración…', likes: '580', comments: '123', project: 'pro-atv' },
+  { id: 'proenergy-23', brand: 'proenergy', src: 'pro-atv/ig-proenergy-23.jpg', format: 'Reel', hook: 'Freezers solares', caption: 'Cuando la energía no llega, la refrigeración tiene que estar igual…', likes: '233', comments: '16', project: 'pro-atv' },
+  { id: 'proenergy-21', brand: 'proenergy', src: 'pro-atv/ig-proenergy-21.jpg', format: 'Publicación', hook: 'Kit solar: aire solar + paneles', caption: '¿Sufriendo el calor del verano?…', likes: '122', comments: '51', project: 'pro-atv' },
+
+  { id: 'proone-32', brand: 'proone', src: 'pro-atv/ig-proone-32.jpg', format: 'Reel', hook: '¿Tenés entre 8 y 12 años?', caption: 'La Gazelle 110 está lista para tu primera…', likes: '6.341', project: 'pro-atv' },
+  { id: 'proone-35', brand: 'proone', src: 'pro-atv/ig-proone-35.jpg', format: 'Publicación', hook: 'Sorteo Día del Niño: ganá una bici eléctrica', caption: 'Nos adelantamos al Día del Niño y sorteamos una Bici Eléctrica Rod 12…', likes: '4.147', note: 'Sorteo. La captura no muestra el número de comentarios.', project: 'pro-atv' },
+  { id: 'proone-31', brand: 'proone', src: 'pro-atv/ig-proone-31.jpg', format: 'Reel', hook: 'Para los más… (con @hijuetigre)', caption: '@hijuetigre recomienda nuestras motos…', likes: '401', comments: '47', note: 'Colaboración con el creador @hijuetigre.', project: 'pro-atv' },
+  { id: 'proone-37', brand: 'proone', src: 'pro-atv/ig-proone-37.jpg', format: 'Reel', hook: 'Gira tu teléfono: así se fabrica el Mini Commander', caption: 'Mirá el detalle de cómo fabricamos el Mini…', likes: '378', comments: '29', project: 'pro-atv' },
+  { id: 'proone-33', brand: 'proone', src: 'pro-atv/ig-proone-33.jpg', format: 'Publicación', hook: 'Moto Gazelle 110: promo Día del Niño', caption: 'La moto con la que arranca todo: Gazelle 110cc 0KM…', likes: '90', comments: '13', project: 'pro-atv' },
+  { id: 'proone-34', brand: 'proone', src: 'pro-atv/ig-proone-34.jpg', format: 'Publicación', hook: 'El regalo ideal para el Día del Niño', caption: 'El regalo ideal para el Día del Niño. RFZ 110cc 0KM…', likes: '88', comments: '8', project: 'pro-atv' },
+  { id: 'proone-36', brand: 'proone', src: 'pro-atv/ig-proone-36.jpg', format: 'Carrusel', hook: '¡Buscamos piloto! Mini Commander sin dueño', caption: 'Cuatriciclo busca piloto: vacante disponible…', likes: '18', comments: '17', project: 'pro-atv' },
 ];
 
 export const postsBy = (brand: BrandKey) => POSTS.filter((p) => p.brand === brand);

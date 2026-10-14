@@ -148,11 +148,7 @@ export const PROJECTS: Project[] = [
         brandImage: 'pro-atv/manual-24.webp',
         profile: 'pro-atv/proone-profile.png',
         instagram: 'https://www.instagram.com/proonemotos.ar/',
-        pieces: [
-          { src: 'pro-atv/proone-post-1.png', alt: 'Publicación de PRO ONE: Así se fabrica el cuatri Mini Commander' },
-          { src: 'pro-atv/proone-post-2.png', alt: 'Publicación de PRO ONE: ¡Buscamos piloto! Mini Commander sin dueño' },
-          { src: 'pro-atv/proone-post-3.png', alt: 'Publicación de PRO ONE: Cómo prepararte para una gran aventura' },
-        ],
+        posts: ['proone-32', 'proone-35', 'proone-31', 'proone-37', 'proone-33', 'proone-34', 'proone-36'],
       },
       {
         name: 'PRO ENERGY Home',
@@ -162,7 +158,7 @@ export const PROJECTS: Project[] = [
         brandImage: 'pro-atv/manual-19.webp',
         profile: 'pro-atv/proenergy-profile.png',
         instagram: 'https://www.instagram.com/proenergyhome.ar/',
-        posts: ['proenergy-12', 'proenergy-13', 'proenergy-14'],
+        posts: ['proenergy-24', 'proenergy-22', 'proenergy-25', 'proenergy-23', 'proenergy-21', 'proenergy-12', 'proenergy-13', 'proenergy-14'],
         pieces: [
           { src: 'pro-atv/proenergy-post-1.png', alt: 'Publicación de PRO ENERGY Home: La solución si vivís en una zona sin conexión' },
           { src: 'pro-atv/proenergy-post-2.png', alt: 'Publicación de PRO ENERGY Home: Novedad silla gerencial' },

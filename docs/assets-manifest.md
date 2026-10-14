@@ -45,12 +45,24 @@ Columnas: archivo · cliente/carpeta · dimensiones · peso · calidad estimada 
 | `pro-atv/ig-proenergy-12.jpg` | pro-atv | 738×1600 | 98 KB | media | sí | Captura de Instagram (ZIP V2) |
 | `pro-atv/ig-proenergy-13.jpg` | pro-atv | 738×1600 | 141 KB | media | sí | Captura de Instagram (ZIP V2) |
 | `pro-atv/ig-proenergy-14.jpg` | pro-atv | 738×1600 | 105 KB | media | sí | Captura de Instagram (ZIP V2) |
+| `pro-atv/ig-proenergy-21.jpg` | pro-atv | 590×1280 | 113 KB | media | sí | Captura de Instagram (ZIP V2) |
+| `pro-atv/ig-proenergy-22.jpg` | pro-atv | 590×1280 | 92 KB | media | sí | Captura de Instagram (ZIP V2) |
+| `pro-atv/ig-proenergy-23.jpg` | pro-atv | 738×1600 | 146 KB | media | sí | Captura de Instagram (ZIP V2) |
+| `pro-atv/ig-proenergy-24.jpg` | pro-atv | 738×1600 | 184 KB | media | sí | Captura de Instagram (ZIP V2) |
+| `pro-atv/ig-proenergy-25.jpg` | pro-atv | 738×1600 | 154 KB | media | sí | Captura de Instagram (ZIP V2) |
 | `pro-atv/ig-prokids-15.jpg` | pro-atv | 738×1600 | 154 KB | media | sí | Captura de Instagram (ZIP V2) |
 | `pro-atv/ig-prokids-16.jpg` | pro-atv | 738×1600 | 175 KB | media | sí | Captura de Instagram (ZIP V2) |
 | `pro-atv/ig-prokids-17.jpg` | pro-atv | 738×1600 | 94 KB | media | sí | Captura de Instagram (ZIP V2) |
 | `pro-atv/ig-prokids-18.jpg` | pro-atv | 738×1600 | 123 KB | media | sí | Captura de Instagram (ZIP V2) |
 | `pro-atv/ig-prokids-19.jpg` | pro-atv | 738×1600 | 174 KB | media | sí | Captura de Instagram (ZIP V2) |
 | `pro-atv/ig-prokids-20.jpg` | pro-atv | 738×1600 | 243 KB | media | sí | Captura de Instagram (ZIP V2) |
+| `pro-atv/ig-proone-31.jpg` | pro-atv | 738×1600 | 166 KB | media | sí | Captura de Instagram (ZIP V2) |
+| `pro-atv/ig-proone-32.jpg` | pro-atv | 738×1600 | 232 KB | media | sí | Captura de Instagram (ZIP V2) |
+| `pro-atv/ig-proone-33.jpg` | pro-atv | 738×1600 | 249 KB | media | sí | Captura de Instagram (ZIP V2) |
+| `pro-atv/ig-proone-34.jpg` | pro-atv | 738×1600 | 281 KB | media | sí | Captura de Instagram (ZIP V2) |
+| `pro-atv/ig-proone-35.jpg` | pro-atv | 738×1600 | 171 KB | media | sí | Captura de Instagram (ZIP V2) |
+| `pro-atv/ig-proone-36.jpg` | pro-atv | 738×1600 | 264 KB | media | sí | Captura de Instagram (ZIP V2) |
+| `pro-atv/ig-proone-37.jpg` | pro-atv | 738×1600 | 149 KB | media | sí | Captura de Instagram (ZIP V2) |
 | `pro-atv/manual-01.webp` | pro-atv | 1600×901 | 53 KB | alta | sí | PROATV_manual.pdf (página rasterizada a 1600px) |
 | `pro-atv/manual-16.webp` | pro-atv | 1600×901 | 23 KB | alta | sí | PROATV_manual.pdf (página rasterizada a 1600px) |
 | `pro-atv/manual-17.webp` | pro-atv | 1600×901 | 24 KB | alta | sí | PROATV_manual.pdf (página rasterizada a 1600px) |
@@ -65,9 +77,9 @@ Columnas: archivo · cliente/carpeta · dimensiones · peso · calidad estimada 
 | `pro-atv/proenergy-post-3.png` | pro-atv | 283×380 | 163 KB | baja (<500px) | sí | ZIP V2 / presentaciones (ver auditoría) |
 | `pro-atv/proenergy-profile.png` | pro-atv | 1408×941 | 850 KB | alta | sí | Captura de perfil de Instagram (ZIP V2) |
 | `pro-atv/prokids-profile.png` | pro-atv | 1412×974 | 1223 KB | alta | sí | Captura de perfil de Instagram (ZIP V2) |
-| `pro-atv/proone-post-1.png` | pro-atv | 282×375 | 212 KB | baja (<500px) | sí | ZIP V2 / presentaciones (ver auditoría) |
-| `pro-atv/proone-post-2.png` | pro-atv | 283×378 | 243 KB | baja (<500px) | sí | ZIP V2 / presentaciones (ver auditoría) |
-| `pro-atv/proone-post-3.png` | pro-atv | 282×380 | 222 KB | baja (<500px) | sí | ZIP V2 / presentaciones (ver auditoría) |
+| `pro-atv/proone-post-1.png` | pro-atv | 282×375 | 212 KB | baja (<500px) | NO (no referenciado) | ZIP V2 / presentaciones (ver auditoría) |
+| `pro-atv/proone-post-2.png` | pro-atv | 283×378 | 243 KB | baja (<500px) | NO (no referenciado) | ZIP V2 / presentaciones (ver auditoría) |
+| `pro-atv/proone-post-3.png` | pro-atv | 282×380 | 222 KB | baja (<500px) | NO (no referenciado) | ZIP V2 / presentaciones (ver auditoría) |
 | `pro-atv/proone-profile.png` | pro-atv | 1410×903 | 1410 KB | alta | sí | Captura de perfil de Instagram (ZIP V2) |
 | `recetario-ivess/cover.webp` | recetario-ivess | 480×320 | 27 KB | baja (<500px) | sí | ZIP V2 / presentaciones (ver auditoría) |
 | `recetario-ivess/home-full.png` | recetario-ivess | 480×2048 | 1170 KB | baja (<500px) | sí | ZIP V2 / presentaciones (ver auditoría) |

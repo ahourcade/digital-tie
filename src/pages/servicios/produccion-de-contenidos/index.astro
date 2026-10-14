@@ -28,18 +28,19 @@ const formats = [
 ];
 
 // Galería: todas las capturas con métricas + piezas de PRO ONE (sin métricas visibles en la captura).
-type Item = { key: string; brand: BrandKey | 'proone'; src: string; alt: string; postId?: string; label: string };
+type Item = { key: string; brand: BrandKey; src: string; alt: string; postId?: string; label: string };
+const num = (v?: string) => Number((v ?? '0').replace(/\./g, ''));
+// Orden: primero las piezas con más Me gusta visibles en la captura.
 const items: Item[] = [
-  ...POSTS.map((p) => ({ key: p.id, brand: p.brand, src: p.src, alt: `${p.format} de ${BRANDS[p.brand].label}: ${p.hook}`, postId: p.id, label: BRANDS[p.brand].label })),
-  ...[1, 2, 3].map((n) => ({ key: `proone-${n}`, brand: 'proone' as const, src: `pro-atv/proone-post-${n}.png`, alt: ['Publicación de PRO ONE: Así se fabrica el cuatri Mini Commander', 'Publicación de PRO ONE: ¡Buscamos piloto!', 'Publicación de PRO ONE: Cómo prepararte para una gran aventura'][n - 1], label: 'PRO ONE' })),
+  ...[...POSTS].sort((a, b) => num(b.likes) - num(a.likes)).map((p) => ({ key: p.id, brand: p.brand, src: p.src, alt: `${p.format} de ${BRANDS[p.brand].label}: ${p.hook}`, postId: p.id, label: BRANDS[p.brand].label })),
 ];
 const filters = [
   { k: 'all', l: 'Todas', n: items.length },
-  ...(['vzh', 'homer', 'proenergy', 'prokids'] as BrandKey[]).map((k) => ({ k, l: BRANDS[k].label, n: items.filter((i) => i.brand === k).length })),
-  { k: 'proone', l: 'PRO ONE', n: 3 },
+  ...(['proone', 'proenergy', 'prokids', 'vzh', 'homer'] as BrandKey[]).map((k) => ({ k, l: BRANDS[k].label, n: items.filter((i) => i.brand === k).length })),
 ];
-const featured = postById('vzh-00');
-const heroPhones = ['prokids-18', 'vzh-03', 'homer-11'].map(postById);
+const featured = postById('proone-32');
+const standouts = ['vzh-00', 'proone-35', 'proenergy-24', 'proenergy-22'].map(postById);
+const heroPhones = ['proenergy-22', 'prokids-20', 'vzh-03'].map(postById);
 
 const schema = [{
   '@context': 'https://schema.org',
@@ -167,19 +168,25 @@ const schema = [{
   <section class="section proof" aria-labelledby="proof-title">
     <div class="container proof-grid">
       <div class="proof-phone">
-        <PhoneFrame src={featured.src} alt="Reel de VZH: ¿Listo para salir a la ruta?" postId={featured.id} group="destacado" showMeta={false} sizes="(min-width: 1024px) 26vw, 70vw" />
+        <PhoneFrame src={featured.src} alt="Reel de PRO ONE: ¿Tenés entre 8 y 12 años?" postId={featured.id} group="destacado" showMeta={false} sizes="(min-width: 1024px) 26vw, 70vw" />
       </div>
       <div class="proof-copy">
         <p class="label">Una pieza, un número</p>
-        <p class="big num">5.055</p>
-        <h2 id="proof-title" class="h3">Me gusta en este reel de VZH.</h2>
-        <p class="lead muted">«¿Listo para salir a la ruta?», producido por Digital Tie para <a href="/proyectos/vzh/">VZH</a>. El número corresponde a esta publicación y es el que muestra la captura; no es un promedio de la cuenta.</p>
+        <p class="big num">6.341</p>
+        <h2 id="proof-title" class="h3">Me gusta en este reel de PRO ONE.</h2>
+        <p class="lead muted">«¿Tenés entre 8 y 12 años?», producido por Digital Tie para <a href="/proyectos/pro-atv/">PRO ONE</a>. El número corresponde a esta publicación y es el que muestra la captura; no es un promedio de la cuenta.</p>
         <dl class="mini">
-          <div><dt class="label">Publicación</dt><dd>Reel · @baterias.vzh</dd></div>
-          <div><dt class="label">Visible en la captura</dt><dd class="num">5.055 Me gusta · 35 comentarios</dd></div>
+          <div><dt class="label">Publicación</dt><dd>Reel · @proonemotos.ar</dd></div>
+          <div><dt class="label">Visible en la captura</dt><dd class="num">6.341 Me gusta · 936 envíos</dd></div>
         </dl>
-        <a class="link-arrow" href="/proyectos/vzh/">Ver el caso VZH completo <span class="arrow" aria-hidden="true">→</span></a>
+        <a class="link-arrow" href="/proyectos/pro-atv/">Ver el caso PRO ATV completo <span class="arrow" aria-hidden="true">→</span></a>
       </div>
+    </div>
+    <div class="container more">
+      <h3 class="h4">Otras piezas con mucha interacción</h3>
+      <ul class="more-grid" role="list">
+        {standouts.map((p) => <li><PhoneFrame src={p.src} alt={`${p.format} de ${BRANDS[p.brand].label}: ${p.hook}`} postId={p.id} group="destacado" sizes="(min-width: 1024px) 20vw, 45vw" /></li>)}
+      </ul>
     </div>
   </section>
 
@@ -271,6 +278,9 @@ const schema = [{
   @media (min-width: 1024px) { .proof-grid { grid-template-columns: 4fr 8fr; column-gap: calc(var(--gap) * 3); } }
   @media (max-width: 479px) { .mini > div { grid-template-columns: 1fr; gap: 2px; } }
 
+  .more { margin-top: var(--section); display: grid; gap: var(--s-6); padding-top: 16px; border-top: 1px solid var(--ink); }
+  .more-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--s-7) var(--gap); margin: 0; }
+  @media (min-width: 1024px) { .more-grid { grid-template-columns: repeat(4, 1fr); } }
   .ask-grid { display: grid; gap: var(--s-7); }
   .ask-copy { display: grid; gap: var(--s-4); align-content: start; }
   @media (min-width: 1024px) { .ask-grid { grid-template-columns: 5fr 7fr; column-gap: calc(var(--gap) * 2); } }
