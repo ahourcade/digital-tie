@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Firma de correo · Digital Tie</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+  :root{--blue:#0066FF;--ink:#0C1525;--paper:#F8FAFC;--muted:#5B6576;--line:#E3E8EF}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+  .wrap{max-width:760px;margin:0 auto;padding:48px 16px 80px}
+  h1{font-size:clamp(1.6rem,4vw,2.2rem);line-height:1.15;margin:0 0 8px;letter-spacing:-.02em}
+  .lead{color:var(--muted);margin:0 0 32px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:28px 20px;overflow-x:auto}
+  .mail-head{font-size:13px;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:22px}
+  .actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:20px 0 40px}
+  button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:14px 22px;cursor:pointer;background:var(--blue);color:#fff;min-height:48px}
+  button.ghost{background:transparent;color:var(--ink);border:1px solid #C9D1DC}
+  button:focus-visible{outline:3px solid rgba(0,102,255,.35);outline-offset:2px}
+  .ok{font-weight:700;color:#1b7f3b;min-height:1.5em}
+  h2{font-size:1.15rem;margin:40px 0 12px}
+  ol{padding-left:20px;margin:0}
+  li{margin:6px 0}
+  .note{font-size:14px;color:var(--muted);border-left:3px solid var(--blue);padding:4px 0 4px 14px;margin-top:24px}
+  code{background:#EEF2F7;padding:2px 6px;border-radius:4px;font-size:.9em}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Firma de correo</h1>
+  <p class="lead">Lista para pegar en Gmail. El logo se anima solo: la corbata se afloja y se vuelve a ajustar.</p>
+
+  <div class="card">
+    <div class="mail-head">Vista previa · así se ve al final de cada mail</div>
+
+    <!-- FIRMA: inicio -->
+    <div id="firma">
+<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse;max-width:480px;font-family:Arial,Helvetica,sans-serif;color:#0C1525;">
+  <tr>
+    <td style="padding:0 0 14px 0;">
+      <a href="https://digitaltie.net/?utm_source=firma&amp;utm_medium=email" target="_blank" style="text-decoration:none;"><img src="https://digitaltie.net/firma/logo-animado.gif" width="220" height="40" alt="DIGITAL TIE" style="display:block;width:220px;height:auto;max-width:100%;border:0;outline:none;"></a>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse;">
+        <tr>
+          <td width="3" style="width:3px;background-color:#0066FF;font-size:0;line-height:0;">&nbsp;</td>
+          <td style="padding:2px 0 2px 14px;">
+            <div style="font-size:16px;line-height:22px;font-weight:bold;color:#0C1525;">Andrés Hourcade</div>
+            <div style="font-size:13px;line-height:19px;color:#5B6576;">Co-fundador · Business Development Manager</div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:14px 0 0 0;font-size:13px;line-height:21px;color:#0C1525;">
+      <span style="color:#0066FF;font-weight:bold;">W</span>&nbsp;&nbsp;<a href="https://wa.me/5491131190914?text=Hola%20Andr%C3%A9s%2C%20te%20escribo%20por%20tu%20mail" target="_blank" style="color:#0C1525;text-decoration:none;">+54 9 11 3119-0914</a><br>
+      <span style="color:#0066FF;font-weight:bold;">M</span>&nbsp;&nbsp;<a href="mailto:ahourcade@digitaltie.net" style="color:#0C1525;text-decoration:none;">ahourcade@digitaltie.net</a><br>
+      <span style="color:#0066FF;font-weight:bold;">→</span>&nbsp;&nbsp;<a href="https://digitaltie.net/?utm_source=firma&amp;utm_medium=email" target="_blank" style="color:#0066FF;text-decoration:none;font-weight:bold;">digitaltie.net</a>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:16px 0 0 0;">
+      <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse;">
+        <tr>
+          <td style="background-color:#0C1525;border-radius:999px;">
+            <a href="https://digitaltie.net/proyectos/?utm_source=firma&amp;utm_medium=email" target="_blank" style="display:inline-block;padding:9px 18px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:16px;font-weight:bold;color:#FFFFFF;text-decoration:none;border-radius:999px;">Ver proyectos&nbsp;→</a>
+          </td>
+          <td style="padding-left:14px;font-size:12px;line-height:16px;color:#5B6576;font-style:italic;">La creatividad también tiene método.</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+    </div>
+    <!-- FIRMA: fin -->
+  </div>
+
+  <div class="actions">
+    <button type="button" id="copy">Copiar firma</button>
+    <button type="button" class="ghost" id="copy-html">Copiar código HTML</button>
+    <p class="ok" id="ok" role="status" aria-live="polite"></p>
+  </div>
+
+  <h2>Cómo instalarla en Gmail (computadora)</h2>
+  <ol>
+    <li>Tocá <strong>Copiar firma</strong>.</li>
+    <li>En Gmail: ⚙️ <strong>Configuración → Ver toda la configuración</strong>, pestaña <strong>General</strong>.</li>
+    <li>En <strong>Firma</strong> → <strong>Crear nueva</strong>, ponele un nombre y pegá con <code>Ctrl/⌘ + V</code>.</li>
+    <li>Abajo, en <strong>Valores predeterminados de firma</strong>, elegila para mensajes nuevos y respuestas.</li>
+    <li>Tildá <em>“Insertar esta firma antes del texto citado”</em> y <strong>Guardar cambios</strong>.</li>
+  </ol>
+  <p class="note">La firma se configura una sola vez desde la computadora y Gmail la usa también en el celular (app de Android/iOS) al responder desde la misma cuenta. El logo se ve animado en Gmail, Apple Mail e iPhone; Outlook de escritorio muestra el logo completo, quieto. Todos los enlaces funcionan en cualquier dispositivo.</p>
+</main>
+<script>
+  const ok = document.getElementById('ok');
+  const src = document.getElementById('firma');
+  const say = (t) => { ok.textContent = t; setTimeout(() => ok.textContent = '', 4000); };
+  document.getElementById('copy').addEventListener('click', async () => {
+    const html = src.innerHTML.trim();
+    try {
+      await navigator.clipboard.write([new ClipboardItem({
+        'text/html': new Blob([html], { type: 'text/html' }),
+        'text/plain': new Blob([src.innerText], { type: 'text/plain' }),
+      })]);
+    } catch {
+      const r = document.createRange(); r.selectNodeContents(src);
+      const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      document.execCommand('copy'); s.removeAllRanges();
+    }
+    say('Copiada. Pegala en Gmail → Configuración → Firma.');
+  });
+  document.getElementById('copy-html').addEventListener('click', async () => {
+    await navigator.clipboard.writeText(src.innerHTML.trim());
+    say('Código HTML copiado.');
+  });
+</script>
+</body>
+</html>

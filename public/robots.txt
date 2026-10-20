@@ -1,4 +1,5 @@
 User-agent: *
+Disallow: /firma/
 Allow: /
 
 Sitemap: https://digitaltie.net/sitemap-index.xml
