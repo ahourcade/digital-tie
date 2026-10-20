@@ -2,4 +2,4 @@ User-agent: *
 Disallow: /firma/
 Allow: /
 
-Sitemap: https://digitaltie.net/sitemap-index.xml
+Sitemap: https://www.digitaltie.net/sitemap-index.xml

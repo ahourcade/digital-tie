@@ -3,7 +3,7 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 
 // Dominio a confirmar antes de publicar (se usa para canonical, sitemap y Open Graph).
-const SITE = process.env.SITE_URL || 'https://digitaltie.net';
+const SITE = process.env.SITE_URL || 'https://www.digitaltie.net';
 
 export default defineConfig({
   site: SITE,
