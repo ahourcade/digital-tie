@@ -1,8 +1,10 @@
 // POST /api/matches — crea un partido y devuelve el link para compartir y la clave del organizador.
+import { storageReady, STORAGE_MSG } from './_lib/store.js';
 import { putJSON } from './_lib/store.js';
 import { json, fail, newId, newKey, sha, readBody, clean, isDay, toMin } from './_lib/util.js';
 
 export async function POST(request) {
+  if (!storageReady()) return new Response(JSON.stringify({ error: STORAGE_MSG }), { status: 503, headers: { 'content-type': 'application/json; charset=utf-8' } });
   let b;
   try {
     b = await readBody(request);

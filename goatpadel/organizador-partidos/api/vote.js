@@ -1,5 +1,6 @@
 // POST /api/vote — un jugador (invitado, sin login) carga o edita su disponibilidad.
 // La primera vez recibe { pid, key }: el navegador las guarda para poder editar después.
+import { storageReady, STORAGE_MSG } from './_lib/store.js';
 import { getJSON, putJSON } from './_lib/store.js';
 import {
   json, fail, readBody, clean, isId, newId, newKey, sha, sameHash,
@@ -7,6 +8,7 @@ import {
 } from './_lib/util.js';
 
 export async function POST(request) {
+  if (!storageReady()) return new Response(JSON.stringify({ error: STORAGE_MSG }), { status: 503, headers: { 'content-type': 'application/json; charset=utf-8' } });
   let b;
   try {
     b = await readBody(request);

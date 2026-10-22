@@ -129,11 +129,12 @@ function renderCreatePage() {
   const mine = LS.get('goat-org-matches', []);
 
   app.innerHTML = `
-    <div class="hero">
+    <div class="hero-band"><div class="wrap">
+      <img class="hero-iso" src="assets/isotipo-bone.svg" alt="" aria-hidden="true" />
       <p class="eyebrow">Organizador de partidos</p>
       <h1>Armá el partido.<br>Sin el ida y vuelta.</h1>
       <p class="lead">Proponé días y horarios, mandá el link al grupo y cada uno marca cuándo puede. El sistema encuentra el horario en que juegan los 4.</p>
-    </div>
+    </div></div>
 
     <div class="grid-2">
       <form class="card" id="createForm" novalidate>
@@ -377,11 +378,12 @@ function renderCreated(id, k, title) {
   const link = shareUrl(id);
   const msg = `🎾 ${title}\nMarcá cuándo podés jugar y el sistema encuentra el horario para todos:\n${link}`;
   app.innerHTML = `
-    <div class="hero">
+    <div class="hero-band"><div class="wrap">
+      <img class="hero-iso" src="assets/isotipo-bone.svg" alt="" aria-hidden="true" />
       <p class="eyebrow">Listo</p>
       <h1>Partido creado</h1>
       <p class="lead">Mandá este link al grupo. Cada uno marca cuándo puede, sin crear cuenta.</p>
-    </div>
+    </div></div>
     <div class="grid-2">
       <div class="card">
         <h2 style="margin-bottom:12px">Link para el grupo</h2>

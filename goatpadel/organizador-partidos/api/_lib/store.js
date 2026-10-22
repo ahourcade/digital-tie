@@ -8,6 +8,10 @@ const ROOT = 'organizador-goat-padel/';
 const USE_BLOB = Boolean(process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID);
 const LOCAL_DIR = path.join(process.cwd(), '.localdata');
 
+/** En Vercel sin Blob conectado no hay dónde guardar: avisamos claro en vez de fallar. */
+export const storageReady = () => USE_BLOB || !process.env.VERCEL;
+export const STORAGE_MSG = 'Falta conectar el almacenamiento del organizador (Vercel Blob). Avisale al administrador.';
+
 export async function putJSON(pathname, data) {
   const body = JSON.stringify(data);
   if (USE_BLOB) {

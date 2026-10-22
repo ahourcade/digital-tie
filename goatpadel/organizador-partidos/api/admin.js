@@ -1,8 +1,10 @@
 // POST /api/admin — acciones del organizador (requiere la clave del link de organizador).
+import { storageReady, STORAGE_MSG } from './_lib/store.js';
 import { getJSON, putJSON, deleteJSON } from './_lib/store.js';
 import { json, fail, readBody, clean, isId, isDay, sameHash, publicMatch } from './_lib/util.js';
 
 export async function POST(request) {
+  if (!storageReady()) return new Response(JSON.stringify({ error: STORAGE_MSG }), { status: 503, headers: { 'content-type': 'application/json; charset=utf-8' } });
   let b;
   try {
     b = await readBody(request);

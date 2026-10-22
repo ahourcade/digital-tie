@@ -1,11 +1,13 @@
 // GET /api/export?key=XXXX[&solo=consentimiento] — descarga la base de jugadores en CSV.
 // La clave se define en Vercel como variable de entorno EXPORT_KEY. Sin esa variable, la exportación queda apagada.
+import { storageReady, STORAGE_MSG } from './_lib/store.js';
 import { listPaths, getMany } from './_lib/store.js';
 import { fail, sameHash, sha } from './_lib/util.js';
 
 const LEVEL_LABEL = { 9: 'Novena', 8: 'Octava', 7: 'Séptima', 6: 'Sexta', 5: 'Quinta', 4: 'Cuarta', '3+': 'Tercera o más', nose: 'No sabe' };
 
 export async function GET(request) {
+  if (!storageReady()) return new Response(JSON.stringify({ error: STORAGE_MSG }), { status: 503, headers: { 'content-type': 'application/json; charset=utf-8' } });
   const secret = process.env.EXPORT_KEY;
   if (!secret) return fail('La exportación no está habilitada.', 404);
   const url = new URL(request.url);
