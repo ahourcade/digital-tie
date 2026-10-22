@@ -54,6 +54,35 @@ export function toMin(hhmm) {
 }
 
 export const LEVELS = ['9', '8', '7', '6', '5', '4', '3+', 'nose'];
+export const SIDES = ['drive', 'reves', 'ambos'];
+export const cleanSide = (v) => (SIDES.includes(String(v)) ? String(v) : '');
+
+/** Rango horario de un día del partido (cada día puede tener el suyo). */
+export function dayWindow(match, day) {
+  const w = match.windows?.[day];
+  return w ? { from: w.from, to: w.to } : { from: match.from, to: match.to };
+}
+
+/**
+ * Disponibilidad: por día, una cadena con 0 (no), 1 (si no queda otra) o 2 (puedo) por bloque de 30 min,
+ * sobre el rango general del partido. Lo que cae fuera del horario propuesto para ese día queda en 0.
+ */
+export function sanitizeAvail(match, raw) {
+  const slots = (match.to - match.from) / match.step;
+  const avail = {};
+  for (const day of match.days) {
+    const src = typeof raw?.[day] === 'string' ? raw[day] : '';
+    const { from, to } = dayWindow(match, day);
+    let s = '';
+    for (let i = 0; i < slots; i++) {
+      const t = match.from + i * match.step;
+      const c = /[012]/.test(src[i] || '') ? src[i] : '0';
+      s += t >= from && t + match.step <= to ? c : '0';
+    }
+    avail[day] = s;
+  }
+  return avail;
+}
 
 export function cleanEmail(v) {
   const e = clean(v, 120).toLowerCase();

@@ -295,3 +295,18 @@ footer.site .foot-logo { height: 40px; }
   .toolbar .seg { width: 100%; }
 }
 @media (max-width: 520px) { .confirmed .slot-time { font-size: 23px; line-height: 1.25; } }
+
+.avgrid .c.off { background: repeating-linear-gradient(135deg, #f1eee8 0 4px, #e9e5dd 4px 8px); cursor: not-allowed; }
+.avgrid .dh small + small { color: var(--bordo); font-weight: 600; }
+.lvl.org { background: var(--navy); color: var(--bone); }
+.pairs { margin: 10px 0 0; font-size: 14px; color: var(--goat-charcoal); }
+.pairs span { display: block; font-family: var(--display); font-weight: 600; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+.pairs.dark { color: var(--bone); }
+.pairs.dark span { color: #c9c5bc; }
+.win-list { display: grid; gap: 8px; margin-top: 10px; }
+.win-row { display: grid; grid-template-columns: 92px 1fr 1fr; gap: 8px; align-items: center; }
+.win-row b { font-family: var(--display); font-weight: 600; font-size: 13px; color: var(--navy); line-height: 1.2; }
+.win-row b small { display: block; font-family: var(--body); font-weight: 400; color: var(--muted); font-size: 12px; }
+.win-row select { min-height: 42px; padding: 8px 10px; }
+.subcard { background: var(--sand); border-radius: var(--radius); padding: 16px; margin: 6px 0 16px; }
+.subcard h3 { margin-bottom: 4px; }

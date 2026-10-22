@@ -14,6 +14,8 @@ export function shapeParticipant(v, withContact) {
     pid: v.pid,
     name: v.name,
     level: v.level,
+    side: v.side || '',
+    organizer: Boolean(v.organizer),
     avail: v.avail,
     comment: v.comment || '',
     createdAt: v.createdAt,

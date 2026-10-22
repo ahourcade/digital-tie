@@ -34,6 +34,74 @@ const LEVELS = [
   ['5', 'Quinta (5ª)'], ['4', 'Cuarta (4ª)'], ['3+', 'Tercera o más'], ['nose', 'No sé mi categoría'],
 ];
 const levelShort = { 9: '9ª', 8: '8ª', 7: '7ª', 6: '6ª', 5: '5ª', 4: '4ª', '3+': '3ª+', nose: '' };
+const SIDES = [['drive', 'Drive'], ['reves', 'Revés'], ['ambos', 'Ambos']];
+const sideLabel = { drive: 'Drive', reves: 'Revés', ambos: 'Ambos' };
+const playerTag = (p) => [levelShort[p.level], sideLabel[p.side]].filter(Boolean).join(' · ');
+
+/** Rango propuesto para un día (cada día puede tener el suyo). */
+const dayWin = (m, d) => m.windows?.[d] || { from: m.from, to: m.to };
+const inWin = (m, d, i) => {
+  const t = m.from + i * m.step;
+  const w = dayWin(m, d);
+  return t >= w.from && t + m.step <= w.to;
+};
+const hm = (min) => (min === 1440 ? '24:00' : hhmm(min));
+
+/** Botones Drive / Revés / Ambos. */
+const sideSeg = (id, val) => `
+  <div class="seg" id="${id}" role="group" aria-label="De qué lado jugás">
+    ${SIDES.map(([v, l]) => `<button type="button" data-v="${v}" aria-pressed="${val === v}">${l}</button>`).join('')}
+  </div>`;
+function bindSeg(id, onChange) {
+  $(id).addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    $$(`${id} button`).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    onChange?.(b.dataset.v);
+  });
+}
+const segValue = (id) => $(`${id} [aria-pressed=true]`)?.dataset.v || '';
+
+/** Marcadores de "qué marcás" + leyenda, comunes a las dos grillas editables. */
+const modeToolbar = (id) => `
+  <div class="toolbar">
+    <div class="seg" id="${id}" role="group" aria-label="Qué marcás">
+      <button type="button" data-v="2" aria-pressed="true">Puedo</button>
+      <button type="button" data-v="1" aria-pressed="false">Si no queda otra</button>
+      <button type="button" data-v="0" aria-pressed="false">Borrar</button>
+    </div>
+    <div class="legend"><span><i class="sw yes"></i>Puedo</span><span><i class="sw maybe"></i>Si no queda otra</span></div>
+  </div>`;
+const GRID_HINT = 'Tocá un horario para marcarlo. Para marcar varios seguidos, mantené apretado y deslizá. Tocá el día para marcarlo entero.';
+
+/** Parejas sugeridas para 4: drive con revés y niveles parejos. */
+function suggestPairs(players) {
+  if (players.length !== 4) return null;
+  const lv = (p) => (p.level === '3+' ? 3 : Number(p.level) || null);
+  const sidePenalty = (a, b) => {
+    if (!a.side || !b.side) return 0.5;
+    if (a.side === 'ambos' || b.side === 'ambos') return 0;
+    return a.side === b.side ? 2 : 0;
+  };
+  const options = [[[0, 1], [2, 3]], [[0, 2], [1, 3]], [[0, 3], [1, 2]]];
+  let best = null;
+  for (const opt of options) {
+    const pairs = opt.map(([i, j]) => [players[i], players[j]]);
+    const side = pairs.reduce((s, [a, b]) => s + sidePenalty(a, b), 0);
+    const sums = pairs.map(([a, b]) => (lv(a) && lv(b) ? lv(a) + lv(b) : null));
+    const lvl = sums.every((x) => x !== null) ? Math.abs(sums[0] - sums[1]) : 0;
+    const score = side * 2 + lvl;
+    if (!best || score < best.score) best = { score, pairs };
+  }
+  // Dentro de cada pareja: el de revés a la izquierda, el de drive a la derecha.
+  const arrange = ([a, b]) => {
+    if (a.side === 'reves' || b.side === 'drive') return [{ p: b, pos: 'drive' }, { p: a, pos: 'revés' }];
+    return [{ p: a, pos: 'drive' }, { p: b, pos: 'revés' }];
+  };
+  return best.pairs.map(arrange);
+}
+const pairsText = (pairs) =>
+  pairs.map((pair) => pair.map(({ p, pos }) => `${p.name} (${pos})`).join(' y ')).join('  vs  ');
 
 function todayAR() {
   return new Intl.DateTimeFormat('en-CA', { timeZone: CFG.tz }).format(new Date());
@@ -51,7 +119,8 @@ function dayLabel(iso, style = 'long') {
   const wd = new Intl.DateTimeFormat('es-AR', { weekday: style === 'long' ? 'long' : 'short', timeZone: 'UTC' }).format(d).replace('.', '');
   const dm = new Intl.DateTimeFormat('es-AR', { day: 'numeric', month: style === 'long' ? 'long' : 'numeric', timeZone: 'UTC' }).format(d);
   if (style === 'long') { const t2 = rel ? `${rel}, ${wd} ${dm}` : `${wd} ${dm}`; return t2.charAt(0).toUpperCase() + t2.slice(1); }
-  return { wd: rel || wd, dm };
+  const w = rel || wd;
+  return { wd: w.charAt(0).toUpperCase() + w.slice(1), dm };
 }
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n);
 
@@ -121,9 +190,8 @@ function renderCreatePage() {
   document.title = 'Organizador de partidos · GOAT PADEL';
   const today = todayAR();
   const nextDays = Array.from({ length: 14 }, (_, i) => addDays(today, i));
-  const times = [];
-  for (let m = 6 * 60; m <= 24 * 60; m += 30) times.push(m);
-  const opt = (m, sel) => `<option value="${hhmm(m) === '00:00' && m === 1440 ? '24:00' : hhmm(m)}" ${m === sel ? 'selected' : ''}>${m === 1440 ? '24:00' : hhmm(m)}</option>`;
+  const TIMES = [];
+  for (let m = 6 * 60; m <= 24 * 60; m += 30) TIMES.push(m);
   const profile = LS.get('goat-org-profile', {});
   const lastPlace = LS.get('goat-org-place', null);
   const mine = LS.get('goat-org-matches', []);
@@ -143,7 +211,7 @@ function renderCreatePage() {
         <div class="row">
           <div class="field">
             <label for="fOrg">Tu nombre</label>
-            <input id="fOrg" type="text" maxlength="40" autocomplete="given-name" required value="${esc(profile.name || '')}" placeholder="Ej.: Buki" />
+            <input id="fOrg" type="text" maxlength="40" autocomplete="given-name" required value="${esc(profile.name || '')}" placeholder="Ej.: Juan" />
           </div>
           <div class="field">
             <label for="fTitle">Nombre del partido <span class="muted">(opcional)</span></label>
@@ -163,17 +231,15 @@ function renderCreatePage() {
         </div>
 
         <div class="field">
-          <span class="label">Rango horario</span>
+          <span class="label">¿En qué horario podés cada día?</span>
           <div class="chips" id="fPresets">
             <button type="button" class="chip" data-from="480" data-to="780">Mañana</button>
             <button type="button" class="chip" data-from="780" data-to="1080">Tarde</button>
             <button type="button" class="chip" data-from="1080" data-to="1440">Noche</button>
             <button type="button" class="chip" data-from="480" data-to="1440">Todo el día</button>
           </div>
-          <div class="row" style="margin-top:8px">
-            <div class="field" style="margin:0"><label for="fFrom" class="hint">Desde</label><select id="fFrom">${times.slice(0, -1).map((m) => opt(m, 17 * 60)).join('')}</select></div>
-            <div class="field" style="margin:0"><label for="fTo" class="hint">Hasta</label><select id="fTo">${times.slice(1).map((m) => opt(m, 23 * 60 + 30)).join('')}</select></div>
-          </div>
+          <span class="hint">Los atajos aplican a todos los días; después ajustás cada uno.</span>
+          <div class="win-list" id="fWins"></div>
         </div>
 
         <div class="row">
@@ -192,6 +258,27 @@ function renderCreatePage() {
               <button type="button" data-v="2" aria-pressed="false">2</button>
             </div>
           </div>
+        </div>
+
+        <div class="subcard">
+          <h3>Vos ya estás anotado</h3>
+          <p class="small muted" style="margin:0 0 14px">Marcá en qué horarios jugás seguro y cuáles solo si no queda otra. Los demás se suman sobre estos horarios.</p>
+          <div class="row">
+            <div class="field"><label for="fLevel">Tu categoría</label>
+              <select id="fLevel">${LEVELS.map(([v, l]) => `<option value="${v}" ${(profile.level || 'nose') === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+            </div>
+            <div class="field"><span class="label">¿De qué lado jugás?</span>${sideSeg('fSide', profile.side || '')}</div>
+          </div>
+          <p class="hint" style="margin:-6px 0 14px">¿No sabés tu categoría? <a href="${esc(CFG.testUrl)}" target="_blank" rel="noopener">Hacé el test de nivel de GOAT PADEL</a>.</p>
+          ${modeToolbar('fMode')}
+          <div class="gridwrap"><div class="avgrid" id="orgGrid"></div></div>
+          <p class="grid-hint">${GRID_HINT}</p>
+        </div>
+
+        <div class="field">
+          <label for="fDeadline">Responder antes de <span class="muted">(opcional)</span></label>
+          <input id="fDeadline" type="datetime-local" />
+          <span class="hint">Lo ven todos en el link, con la cuenta regresiva.</span>
         </div>
 
         <hr class="divider" />
@@ -215,7 +302,7 @@ function renderCreatePage() {
         <label class="check" style="margin-bottom:14px"><input type="checkbox" id="fCovered" /> <span>Cancha techada <span class="muted">(la lluvia no cuenta para elegir horario)</span></span></label>
 
         <details>
-          <summary>Más opciones: precio, alias y fecha límite</summary>
+          <summary>Más opciones: precio, alias y notas</summary>
           <div style="margin-top:12px">
             <div class="row">
               <div class="field">
@@ -225,12 +312,8 @@ function renderCreatePage() {
               </div>
               <div class="field">
                 <label for="fAlias">Alias para transferir</label>
-                <input id="fAlias" type="text" maxlength="60" placeholder="Ej.: buki.padel" />
+                <input id="fAlias" type="text" maxlength="60" placeholder="Ej.: juan.padel" />
               </div>
-            </div>
-            <div class="field">
-              <label for="fDeadline">Responder antes de</label>
-              <input id="fDeadline" type="datetime-local" />
             </div>
             <div class="field">
               <label for="fNotes">Notas para el grupo</label>
@@ -239,6 +322,15 @@ function renderCreatePage() {
           </div>
         </details>
 
+        <div class="field" style="margin-top:16px">
+          <label class="check"><input type="checkbox" id="fConsent" ${profile.consent ? 'checked' : ''} />
+            <span>Quiero recibir novedades, promos y tips de GOAT PADEL por mail o WhatsApp. <span class="muted">Podés darte de baja cuando quieras.</span></span></label>
+        </div>
+        <div class="row" id="fContact" ${profile.consent ? '' : 'hidden'}>
+          <div class="field"><label for="fEmail">Mail</label><input id="fEmail" type="email" autocomplete="email" maxlength="120" value="${esc(profile.email || '')}" /></div>
+          <div class="field"><label for="fPhone">WhatsApp</label><input id="fPhone" type="tel" autocomplete="tel" maxlength="20" value="${esc(profile.phone || '')}" placeholder="11 1234 5678" /></div>
+        </div>
+
         <div style="margin-top:18px"><button class="btn btn-primary btn-block" type="submit" id="fSubmit">Crear partido y obtener link</button></div>
       </form>
 
@@ -246,9 +338,9 @@ function renderCreatePage() {
         <div class="card">
           <h3 style="margin-bottom:14px">Cómo funciona</h3>
           <ol class="steps">
-            <li><div><b>Proponés</b> días y un rango horario.</div></li>
-            <li><div><b>Compartís el link</b> por WhatsApp. No hace falta cuenta: cada uno pone su nombre y marca cuándo puede.</div></li>
-            <li><div><b>El sistema elige</b> los horarios donde coinciden los 4, con suplentes y el clima del momento. Confirmás con un toque.</div></li>
+            <li><div><b>Proponés</b> los días y el horario en que podés cada uno. Quedás anotado como primer jugador.</div></li>
+            <li><div><b>Compartís el link</b> por WhatsApp. No hace falta cuenta: cada uno pone su nombre y marca cuándo puede dentro de esos horarios.</div></li>
+            <li><div><b>El sistema elige</b> los horarios donde coinciden los 4, con suplentes, parejas sugeridas y el clima. Confirmás con un toque.</div></li>
           </ol>
         </div>
         ${mine.length ? `
@@ -262,32 +354,103 @@ function renderCreatePage() {
       </aside>
     </div>`;
 
-  // --- comportamiento del formulario ---
+  // --- estado del formulario ---
   const form = $('#createForm');
   let place = lastPlace;
+  let lastWin = { from: 17 * 60, to: 23 * 60 + 30 };
+  const wins = {};       // día -> { from, to }
+  const orgDraft = {};   // día -> disponibilidad del organizador ("0/1/2" por bloque)
+  let orgMode = 2;
+
+  const selectedDays = () => $$('#fDays [aria-pressed=true]').map((b) => b.dataset.day);
+  const duration = () => Number(segValue('#fDur')) || 90;
+
+  // Partido "provisorio" con los datos cargados, para dibujar la grilla del organizador.
+  function draftMatch() {
+    const days = selectedDays();
+    const from = Math.min(...days.map((d) => wins[d].from));
+    const to = Math.max(...days.map((d) => wins[d].to));
+    return { days, windows: wins, from, to, step: 30 };
+  }
+
+  function renderWindows() {
+    const days = selectedDays();
+    for (const d of days) if (!wins[d]) wins[d] = { ...lastWin };
+    const opt = (m, sel) => `<option value="${m}" ${m === sel ? 'selected' : ''}>${hm(m)}</option>`;
+    $('#fWins').innerHTML = days.map((d) => {
+      const l = dayLabel(d, 'short');
+      return `<div class="win-row" data-day="${d}">
+        <b>${esc(l.wd)}<small>${esc(l.dm)}</small></b>
+        <select data-k="from" aria-label="Desde, ${esc(l.wd)} ${esc(l.dm)}">${TIMES.slice(0, -1).map((m) => opt(m, wins[d].from)).join('')}</select>
+        <select data-k="to" aria-label="Hasta, ${esc(l.wd)} ${esc(l.dm)}">${TIMES.slice(1).map((m) => opt(m, wins[d].to)).join('')}</select>
+      </div>`;
+    }).join('') || '<p class="hint">Elegí al menos un día.</p>';
+    renderOrgGrid();
+  }
+
+  // Rehace la grilla conservando lo ya marcado. Lo nuevo dentro del horario arranca como "Puedo".
+  function renderOrgGrid() {
+    const days = selectedDays();
+    if (!days.length) { $('#orgGrid').innerHTML = ''; return; }
+    const m = draftMatch();
+    const n = slotsCount(m);
+    const prev = { ...orgDraft };
+    for (const k of Object.keys(orgDraft)) delete orgDraft[k];
+    for (const d of days) {
+      let s = '';
+      for (let i = 0; i < n; i++) {
+        const t = m.from + i * m.step;
+        const old = prev[d]?.[t];
+        s += inWin(m, d, i) ? (old ?? '2') : '0';
+      }
+      orgDraft[d] = s;
+    }
+    // Guardamos lo marcado por minuto para no perderlo si cambia el rango general.
+    buildGrid($('#orgGrid'), m, { editable: true, draft: orgDraft, getMode: () => orgMode });
+    orgByMinute = () => Object.fromEntries(days.map((d) => [d, Object.fromEntries([...orgDraft[d]].map((v, i) => [m.from + i * m.step, v]))]));
+  }
+  let orgByMinute = () => ({});
+  // Antes de rehacer, convertimos lo marcado a "minuto -> valor".
+  const rebuild = (fn) => {
+    const snap = orgByMinute();
+    fn();
+    for (const k of Object.keys(orgDraft)) delete orgDraft[k];
+    Object.assign(orgDraft, snap);
+    renderWindows();
+  };
 
   $('#fDays').addEventListener('click', (e) => {
     const b = e.target.closest('.chip');
     if (!b) return;
     const on = b.getAttribute('aria-pressed') !== 'true';
-    if (on && $$('#fDays [aria-pressed=true]').length >= 7) return toast('Hasta 7 días por partido', true);
-    b.setAttribute('aria-pressed', String(on));
+    if (on && selectedDays().length >= 7) return toast('Hasta 7 días por partido', true);
+    rebuild(() => b.setAttribute('aria-pressed', String(on)));
   });
-  for (const id of ['#fDur', '#fNeed']) {
-    $(id).addEventListener('click', (e) => {
-      const b = e.target.closest('button');
-      if (!b) return;
-      $$(`${id} button`).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  $('#fWins').addEventListener('change', (e) => {
+    const sel = e.target.closest('select');
+    if (!sel) return;
+    const d = sel.closest('.win-row').dataset.day;
+    rebuild(() => {
+      wins[d] = { ...wins[d], [sel.dataset.k]: Number(sel.value) };
+      if (wins[d].to <= wins[d].from) wins[d].to = Math.min(1440, wins[d].from + 90);
+      lastWin = { ...wins[d] };
     });
-  }
+  });
   $('#fPresets').addEventListener('click', (e) => {
     const b = e.target.closest('.chip');
     if (!b) return;
-    const v = (m) => (Number(m) === 1440 ? '24:00' : hhmm(Number(m)));
-    $('#fFrom').value = v(b.dataset.from);
-    $('#fTo').value = v(b.dataset.to);
+    rebuild(() => {
+      lastWin = { from: Number(b.dataset.from), to: Number(b.dataset.to) };
+      for (const d of selectedDays()) wins[d] = { ...lastWin };
+    });
   });
+  bindSeg('#fDur');
+  bindSeg('#fNeed');
+  bindSeg('#fSide');
+  bindSeg('#fMode', (v) => { orgMode = Number(v); });
+  $('#fConsent').addEventListener('change', (e) => { $('#fContact').hidden = !e.target.checked; });
 
+  // --- zona para el clima ---
   const setPlace = (p) => {
     place = p;
     LS.set('goat-org-place', p);
@@ -331,21 +494,31 @@ function renderCreatePage() {
     );
   });
 
+  renderWindows();
+
+  // --- enviar ---
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const organizerName = $('#fOrg').value.trim();
     if (!organizerName) { $('#fOrg').focus(); return toast('Poné tu nombre', true); }
-    const days = $$('#fDays [aria-pressed=true]').map((b) => b.dataset.day);
+    const days = selectedDays();
     if (!days.length) return toast('Elegí al menos un día', true);
+    const short = days.find((d) => wins[d].to - wins[d].from < duration());
+    if (short) return toast(`El horario del ${dayLabel(short, 'short').wd} ${dayLabel(short, 'short').dm} es más corto que el partido`, true);
+    if (!days.some((d) => /[12]/.test(orgDraft[d]))) return toast('Marcá al menos un horario en el que podés', true);
+    const consent = $('#fConsent').checked;
+    const email = consent ? $('#fEmail').value.trim() : '';
+    const phone = consent ? $('#fPhone').value.trim() : '';
+    if (consent && !email && !phone) return toast('Dejanos un mail o WhatsApp para las novedades', true);
+
     const dl = $('#fDeadline').value;
     const body = {
       organizerName,
       title: $('#fTitle').value.trim(),
       days,
-      from: $('#fFrom').value,
-      to: $('#fTo').value,
-      duration: Number($('#fDur [aria-pressed=true]').dataset.v),
-      need: Number($('#fNeed [aria-pressed=true]').dataset.v),
+      windows: Object.fromEntries(days.map((d) => [d, { from: hm(wins[d].from), to: hm(wins[d].to) }])),
+      duration: duration(),
+      need: Number(segValue('#fNeed')) || 4,
       club: $('#fClub').value.trim(),
       place,
       covered: $('#fCovered').checked,
@@ -353,19 +526,20 @@ function renderCreatePage() {
       alias: $('#fAlias').value.trim(),
       deadline: dl ? new Date(dl).toISOString() : null,
       notes: $('#fNotes').value.trim(),
+      organizer: { level: $('#fLevel').value, side: segValue('#fSide'), avail: { ...orgDraft }, email, phone, consent },
     };
     const btn = $('#fSubmit');
     btn.disabled = true;
     btn.textContent = 'Creando…';
     try {
-      const { id, adminKey } = await api('matches', { method: 'POST', body: JSON.stringify(body) });
+      const r = await api('matches', { method: 'POST', body: JSON.stringify(body) });
       const title = body.title || 'Partido de pádel';
-      const mine = LS.get('goat-org-matches', []);
-      mine.unshift({ id, k: adminKey, title, createdAt: new Date().toISOString() });
-      LS.set('goat-org-matches', mine.slice(0, 30));
-      const prof = LS.get('goat-org-profile', {});
-      LS.set('goat-org-profile', { ...prof, name: prof.name || organizerName });
-      renderCreated(id, adminKey, title);
+      const list = LS.get('goat-org-matches', []);
+      list.unshift({ id: r.id, k: r.adminKey, title, createdAt: new Date().toISOString() });
+      LS.set('goat-org-matches', list.slice(0, 30));
+      LS.set(`goat-org-vote-${r.id}`, { pid: r.pid, key: r.key });
+      LS.set('goat-org-profile', { ...LS.get('goat-org-profile', {}), name: organizerName, level: body.organizer.level, side: body.organizer.side, email, phone, consent });
+      renderCreated(r.id, r.adminKey, title);
     } catch (err) {
       toast(err.message, true);
       btn.disabled = false;
@@ -390,7 +564,7 @@ function renderCreated(id, k, title) {
         <div class="share-box"><input type="text" readonly value="${esc(link)}" aria-label="Link para el grupo" /><button class="btn btn-sm" id="cp1">Copiar</button></div>
         <div class="actions" style="margin-top:14px">
           <a class="btn btn-wa" href="${esc(waLink(msg))}" target="_blank" rel="noopener">Enviar por WhatsApp</a>
-          <a class="btn btn-primary" href="?m=${esc(id)}&k=${encodeURIComponent(k)}">Cargar mi disponibilidad</a>
+          <a class="btn btn-primary" href="?m=${esc(id)}&k=${encodeURIComponent(k)}">Ver el partido</a>
         </div>
       </div>
       <div class="card">
@@ -493,7 +667,9 @@ function renderAll() {
 
 function renderHead() {
   const m = S.data.match;
-  const range = `${hhmm(m.from)} a ${m.to === 1440 ? '24:00' : hhmm(m.to)}`;
+  const wins = m.days.map((d) => dayWin(m, d));
+  const sameWin = wins.every((w) => w.from === wins[0].from && w.to === wins[0].to);
+  const range = sameWin ? `${hm(wins[0].from)} a ${hm(wins[0].to)}` : 'Horario por día';
   const dl = m.deadline && m.status !== 'confirmed' ? deadlineText(m.deadline) : null;
   const count = S.data.participants.length;
   $('#head').innerHTML = `
@@ -501,8 +677,8 @@ function renderHead() {
     <h1>${esc(m.title)}</h1>
     <div class="meta">
       ${m.status === 'confirmed' ? '<span class="tag ok">Confirmado</span>' : `<span class="tag bordo">${count} ${count === 1 ? 'respuesta' : 'respuestas'} · faltan horarios para ${m.need}</span>`}
-      <span class="tag">${m.days.map((d) => esc(dayLabel(d, 'short').wd + ' ' + dayLabel(d, 'short').dm)).join(' · ')}</span>
-      <span class="tag">${range} · ${m.duration}'</span>
+      <span class="tag">${m.days.map((d) => esc(`${dayLabel(d, 'short').wd} ${dayLabel(d, 'short').dm}${sameWin ? '' : ` ${hm(dayWin(m, d).from)}–${hm(dayWin(m, d).to)}`}`)).join(' · ')}</span>
+      <span class="tag">${sameWin ? `${range} · ` : ''}${m.duration}'</span>
       ${m.club ? `<span class="tag">${esc(m.club)}</span>` : ''}
       ${m.covered ? '<span class="tag">Techada</span>' : ''}
       ${dl ? `<span class="tag ${dl.late ? 'bordo' : ''}">${esc(dl.text)}</span>` : ''}
@@ -548,8 +724,14 @@ const personChip = (p, kind, note = '') =>
 function lineupHtml(g) {
   const maybeIds = new Set(g.maybe.map((p) => p.pid));
   return `
-    <div class="people">${g.lineup.map((p) => personChip(p, maybeIds.has(p.pid) ? 'maybe' : '', maybeIds.has(p.pid) ? 'si no queda otra' : '')).join('')}</div>
+    <div class="people">${g.lineup.map((p) => personChip(p, maybeIds.has(p.pid) ? 'maybe' : '', [sideLabel[p.side], maybeIds.has(p.pid) ? 'si no queda otra' : ''].filter(Boolean).join(' · '))).join('')}</div>
     ${g.bench.length ? `<div class="people">${g.bench.map((p) => personChip(p, 'bench', 'suplente')).join('')}</div>` : ''}`;
+}
+
+function pairsHtml(players, dark = false) {
+  const pairs = suggestPairs(players);
+  if (!pairs) return '';
+  return `<p class="pairs ${dark ? 'dark' : ''}"><span>Parejas sugeridas</span>${esc(pairsText(pairs))}</p>`;
 }
 
 function timeText(g, duration) {
@@ -609,6 +791,7 @@ function slotCard(g, i, admin) {
       <div class="slot-time">${esc(timeText(g, m.duration))}</div>
       ${g.maybeUsed ? `<p class="small muted" style="margin:2px 0 0">${g.maybeUsed === 1 ? 'Uno juega' : `${g.maybeUsed} juegan`} "si no queda otra".</p>` : ''}
       ${lineupHtml(g)}
+      ${pairsHtml(g.lineup)}
       ${wxBlock(g.day, g.firstStart, g.firstStart + m.duration, m.covered)}
       ${admin ? `<div class="actions" style="margin-top:14px"><button class="btn btn-sm btn-primary" data-confirm="${i}">Confirmar este horario</button></div><div data-confirm-form="${i}"></div>` : ''}
     </article>`;
@@ -673,6 +856,7 @@ function renderConfirmed() {
   const text = [
     `✅ Partido confirmado: ${when}${m.club ? ` en ${m.club}` : ''}.`,
     `Juegan: ${players.map((p) => p.name).join(', ')}.`,
+    suggestPairs(players) ? `Parejas: ${pairsText(suggestPairs(players))}.` : '',
     bench.length ? `Suplentes: ${bench.map((p) => p.name).join(', ')}.` : '',
     `Reserva la cancha: ${booker}.`,
     per ? `${money(per)} cada uno${m.alias ? ` · Alias: ${m.alias}` : ''}.` : '',
@@ -684,7 +868,8 @@ function renderConfirmed() {
       <p class="eyebrow">Partido confirmado</p>
       <div class="slot-time">${esc(when)}</div>
       ${m.club ? `<p style="margin:4px 0 0">${esc(m.club)}</p>` : ''}
-      <div class="people">${players.map((p) => personChip(p, '')).join('')}</div>
+      <div class="people">${players.map((p) => personChip(p, '', sideLabel[p.side] || '')).join('')}</div>
+      ${pairsHtml(players, true)}
       ${bench.length ? `<p class="small" style="margin:12px 0 0">Suplentes: ${bench.map((p) => esc(p.name)).join(', ')}</p>` : ''}
       <p class="small" style="margin:12px 0 0">Reserva la cancha: <b>${esc(booker || '')}</b>${per ? ` · ${esc(money(per))} cada uno` : ''}${m.alias ? ` · Alias: <b>${esc(m.alias)}</b> <button class="link-btn" style="color:#f3c6cb" id="cpAlias">copiar</button>` : ''}</p>
       ${wxBlock(c.day, c.start, c.end, m.covered)}
@@ -759,17 +944,14 @@ function renderMine() {
     </div>
     <p class="hint" style="margin:-6px 0 14px">¿No sabés tu categoría? <a href="${esc(CFG.testUrl)}" target="_blank" rel="noopener">Hacé el test de nivel de GOAT PADEL</a>.</p>
 
-    <div class="toolbar">
-      <div class="seg" id="vMode" role="group" aria-label="Qué marcás">
-        <button type="button" data-v="2" aria-pressed="true">Puedo</button>
-        <button type="button" data-v="1" aria-pressed="false">Si no queda otra</button>
-        <button type="button" data-v="0" aria-pressed="false">Borrar</button>
-      </div>
-      <div class="legend"><span><i class="sw yes"></i>Puedo</span><span><i class="sw maybe"></i>Si no queda otra</span></div>
+    <div class="field">
+      <span class="label">¿De qué lado jugás?</span>
+      ${sideSeg('vSide', saved?.side || profile.side || '')}
     </div>
 
+    ${modeToolbar('vMode')}
     <div class="gridwrap"><div class="avgrid" id="myGrid"></div></div>
-    <p class="grid-hint">Tocá un horario para marcarlo. Para marcar varios seguidos, mantené apretado y deslizá. Tocá el día para marcarlo entero.</p>
+    <p class="grid-hint">${GRID_HINT}</p>
     <div class="actions" style="margin-top:10px">
       <button type="button" class="btn btn-sm" id="vHabLoad">Usar mi semana habitual</button>
       <button type="button" class="btn btn-sm" id="vHabSave">Guardar como habitual</button>
@@ -794,7 +976,8 @@ function renderMine() {
 
     <div class="sticky-save"><button class="btn btn-primary btn-block" id="vSave">${saved ? 'Actualizar mi disponibilidad' : 'Guardar mi disponibilidad'}</button></div>`;
 
-  buildGrid($('#myGrid'), m, { editable: true });
+  buildGrid($('#myGrid'), m, { editable: true, draft: S.draft, getMode: () => S.mode });
+  bindSeg('#vSide');
 
   $('#vMode').addEventListener('click', (e) => {
     const b = e.target.closest('button');
@@ -805,7 +988,7 @@ function renderMine() {
   $('#vConsent').addEventListener('change', (e) => { $('#vContact').hidden = !e.target.checked; });
   $('#vClear').onclick = () => {
     for (const d of m.days) S.draft[d] = '0'.repeat(slotsCount(m));
-    paintAll();
+    paintGrid($('#myGrid'), S.draft);
   };
   $('#vHabSave').onclick = () => {
     const hab = LS.get('goat-org-habitual', {});
@@ -826,12 +1009,12 @@ function renderMine() {
       if (!hab[wd]) continue;
       S.draft[d] = [...S.draft[d]].map((v, i) => {
         const h = hab[wd][m.from + i * m.step];
-        if (h === undefined) return v;
+        if (h === undefined || !inWin(m, d, i)) return v;
         any = true;
         return String(h);
       }).join('');
     }
-    paintAll();
+    paintGrid($('#myGrid'), S.draft);
     toast(any ? 'Cargamos tu semana habitual' : 'No hay datos habituales para estos días', !any);
   };
   $('#vSave').onclick = saveMine;
@@ -852,7 +1035,7 @@ async function saveMine() {
   btn.disabled = true;
   try {
     const body = {
-      matchId: m.id, name, level: $('#vLevel').value, email, phone, consent,
+      matchId: m.id, name, level: $('#vLevel').value, side: segValue('#vSide'), email, phone, consent,
       comment: $('#vComment').value.trim(), avail: S.draft,
       pid: S.me?.pid, key: S.me?.key,
     };
@@ -861,7 +1044,7 @@ async function saveMine() {
       S.me = { pid: r.pid, key: r.key };
       LS.set(`goat-org-vote-${m.id}`, S.me);
     }
-    LS.set('goat-org-profile', { name, level: body.level, email, phone, consent });
+    LS.set('goat-org-profile', { name, level: body.level, side: body.side, email, phone, consent });
     toast('¡Listo! Guardamos tu disponibilidad');
     await refresh();
     S.stamp = '';
@@ -875,64 +1058,75 @@ async function saveMine() {
 }
 
 // ---------- grillas ----------
-function buildGrid(el, m, { editable }) {
+// Una sola grilla para todo: días en columnas, bloques de 30 min en filas.
+// Lo que queda fuera del horario propuesto para cada día se ve gris y no se puede marcar.
+function buildGrid(el, m, { editable, draft = null, getMode = () => 2 }) {
   const n = slotsCount(m);
   el.style.gridTemplateColumns = `52px repeat(${m.days.length}, minmax(${m.days.length > 4 ? 52 : 70}px, 1fr))`;
   let html = '<div class="corner"></div>';
   for (const d of m.days) {
     const l = dayLabel(d, 'short');
-    html += `<div class="dh" data-day="${d}" ${editable ? 'role="button" tabindex="0" title="Marcar todo el día"' : ''}>${esc(l.wd)}<small>${esc(l.dm)}</small></div>`;
+    const w = dayWin(m, d);
+    html += `<div class="dh" data-day="${d}" ${editable ? 'role="button" tabindex="0" title="Marcar todo el día"' : ''}>${esc(l.wd)}<small>${esc(l.dm)}</small><small>${hm(w.from)}–${hm(w.to)}</small></div>`;
   }
   for (let i = 0; i < n; i++) {
     const t = m.from + i * m.step;
     const isHour = t % 60 === 0;
     html += `<div class="th ${isHour ? 'hour' : ''} ${i === 0 ? 'first' : ''}">${i === 0 || isHour ? hhmm(t) : ''}</div>`;
     for (const d of m.days) {
-      html += `<div class="c ${(t + m.step) % 60 === 0 ? 'hour' : ''} ${editable ? '' : 'h'}" data-day="${d}" data-i="${i}" ${editable ? '' : 'tabindex="0"'}></div>`;
+      const off = !inWin(m, d, i);
+      html += `<div class="c ${(t + m.step) % 60 === 0 ? 'hour' : ''} ${editable ? '' : 'h'} ${off ? 'off' : ''}" data-day="${d}" data-i="${i}" ${editable || off ? '' : 'tabindex="0"'}></div>`;
     }
   }
   el.innerHTML = html;
   if (editable) {
-    paintAll();
-    bindPainting(el, m);
+    paintGrid(el, draft);
+    bindPainting(el, m, draft, getMode);
   }
 }
 
-function paintAll() {
-  for (const c of $$('#myGrid .c')) {
-    const v = S.draft[c.dataset.day][Number(c.dataset.i)];
+function paintGrid(el, draft) {
+  for (const c of $$('.c', el)) {
+    if (c.classList.contains('off')) continue;
+    const v = (draft[c.dataset.day] || '')[Number(c.dataset.i)] || '0';
     c.className = c.className.replace(/\s?v[012]/g, '') + ` v${v}`;
   }
 }
 
-function setCell(c, v) {
+function setCell(draft, c, v) {
+  if (c.classList.contains('off')) return;
   const d = c.dataset.day;
   const i = Number(c.dataset.i);
-  const s = S.draft[d];
+  const s = draft[d];
   if (s[i] === String(v)) return;
-  S.draft[d] = s.slice(0, i) + v + s.slice(i + 1);
+  draft[d] = s.slice(0, i) + v + s.slice(i + 1);
   c.className = c.className.replace(/\s?v[012]/g, '') + ` v${v}`;
 }
 
-function bindPainting(el, m) {
+function bindPainting(el, m, draft, getMode) {
   let paintVal = null;
   const valueFor = (c) => {
-    const cur = Number(S.draft[c.dataset.day][Number(c.dataset.i)]);
-    return S.mode === 0 ? 0 : cur === S.mode ? 0 : S.mode;
+    const mode = getMode();
+    const cur = Number(draft[c.dataset.day][Number(c.dataset.i)]);
+    return mode === 0 ? 0 : cur === mode ? 0 : mode;
+  };
+  const cellAt = (x, y) => {
+    const c = document.elementFromPoint(x, y)?.closest?.('.c');
+    return c && el.contains(c) && !c.classList.contains('off') ? c : null;
   };
 
   // Mouse: clic y arrastre.
   el.addEventListener('mousedown', (e) => {
     const c = e.target.closest('.c');
-    if (!c) return;
+    if (!c || c.classList.contains('off')) return;
     e.preventDefault();
     paintVal = valueFor(c);
-    setCell(c, paintVal);
+    setCell(draft, c, paintVal);
   });
   el.addEventListener('mouseover', (e) => {
     if (paintVal === null) return;
     const c = e.target.closest('.c');
-    if (c) setCell(c, paintVal);
+    if (c) setCell(draft, c, paintVal);
   });
   window.addEventListener('mouseup', () => { paintVal = null; });
 
@@ -943,7 +1137,7 @@ function bindPainting(el, m) {
   let startCell = null;
   el.addEventListener('touchstart', (e) => {
     const c = e.target.closest('.c');
-    if (!c || e.touches.length > 1) return;
+    if (!c || c.classList.contains('off') || e.touches.length > 1) return;
     startCell = c;
     startXY = [e.touches[0].clientX, e.touches[0].clientY];
     painting = false;
@@ -952,7 +1146,7 @@ function bindPainting(el, m) {
       painting = true;
       el.classList.add('painting');
       paintVal = valueFor(c);
-      setCell(c, paintVal);
+      setCell(draft, c, paintVal);
       navigator.vibrate?.(12);
     }, 280);
   }, { passive: true });
@@ -960,8 +1154,8 @@ function bindPainting(el, m) {
     const t = e.touches[0];
     if (painting) {
       e.preventDefault();
-      const c = document.elementFromPoint(t.clientX, t.clientY)?.closest?.('#myGrid .c');
-      if (c) setCell(c, paintVal);
+      const c = cellAt(t.clientX, t.clientY);
+      if (c) setCell(draft, c, paintVal);
     } else if (startXY && Math.hypot(t.clientX - startXY[0], t.clientY - startXY[1]) > 8) {
       clearTimeout(timer);
       startCell = null;
@@ -971,7 +1165,7 @@ function bindPainting(el, m) {
     clearTimeout(timer);
     if (!painting && startCell) {
       e.preventDefault();
-      setCell(startCell, valueFor(startCell));
+      setCell(draft, startCell, valueFor(startCell));
     }
     painting = false;
     paintVal = null;
@@ -985,12 +1179,15 @@ function bindPainting(el, m) {
     el.classList.remove('painting');
   });
 
-  // Tocar el encabezado del día marca o limpia el día entero.
+  // Tocar el encabezado del día marca o limpia todo su horario propuesto.
   const fillDay = (d) => {
     const n = slotsCount(m);
-    const target = S.mode === 0 || S.draft[d] === String(S.mode).repeat(n) ? '0' : String(S.mode);
-    S.draft[d] = target.repeat(n);
-    paintAll();
+    const mode = String(getMode());
+    const cells = [...Array(n).keys()].filter((i) => inWin(m, d, i));
+    const full = cells.every((i) => draft[d][i] === mode);
+    const target = mode === '0' || full ? '0' : mode;
+    draft[d] = [...draft[d]].map((v, i) => (cells.includes(i) ? target : v)).join('');
+    paintGrid(el, draft);
   };
   $$('.dh', el).forEach((h) => {
     h.addEventListener('click', () => fillDay(h.dataset.day));
@@ -1014,6 +1211,7 @@ function renderGroup() {
   const A = analyze(m, S.data.participants);
   const scale = Math.max(m.need, count);
   for (const c of $$('.c', el)) {
+    if (c.classList.contains('off')) continue;
     const h = A.heat[c.dataset.day][Number(c.dataset.i)];
     const score = h.yes.length + h.maybe.length * 0.5;
     if (score > 0) c.style.background = `rgba(20,33,61,${(0.12 + 0.78 * Math.min(1, score / scale)).toFixed(2)})`;
@@ -1032,10 +1230,10 @@ function renderGroup() {
     el2.style.top = `${Math.max(8, y - r.height - 14)}px`;
   };
   const hide = () => { const t = $('.tooltip'); if (t) t.hidden = true; };
-  el.addEventListener('mousemove', (e) => { const c = e.target.closest('.c'); c ? tip(c, e.clientX, e.clientY) : hide(); });
+  el.addEventListener('mousemove', (e) => { const c = e.target.closest('.c:not(.off)'); c ? tip(c, e.clientX, e.clientY) : hide(); });
   el.addEventListener('mouseleave', hide);
   el.addEventListener('click', (e) => {
-    const c = e.target.closest('.c');
+    const c = e.target.closest('.c:not(.off)');
     if (!c) return;
     const r = c.getBoundingClientRect();
     tip(c, r.left + r.width / 2, r.top);
@@ -1055,7 +1253,7 @@ function renderPeople() {
       <li>
         <span class="av">${esc(initials(p.name))}</span>
         <div class="grow">
-          <div class="name">${esc(p.name)}${levelShort[p.level] ? `<span class="lvl">${esc(levelShort[p.level])}</span>` : ''}${S.me?.pid === p.pid ? ' <span class="small muted">(vos)</span>' : ''}</div>
+          <div class="name">${esc(p.name)}${playerTag(p) ? `<span class="lvl">${esc(playerTag(p))}</span>` : ''}${p.organizer ? '<span class="lvl org">Organiza</span>' : ''}${S.me?.pid === p.pid ? ' <span class="small muted">(vos)</span>' : ''}</div>
           <div class="small muted">${esc(timeAgo(p.updatedAt))}${p.comment ? ` · “${esc(p.comment)}”` : ''}</div>
           ${S.data.admin && (p.email || p.phone) ? `<div class="small">${p.phone ? `<a href="https://wa.me/${esc(p.phone.startsWith('54') ? p.phone : '549' + p.phone)}" target="_blank" rel="noopener">WhatsApp</a>` : ''}${p.phone && p.email ? ' · ' : ''}${p.email ? `<a href="mailto:${esc(p.email)}">${esc(p.email)}</a>` : ''}${p.consent ? ' · <span class="muted">acepta novedades</span>' : ''}</div>` : ''}
         </div>

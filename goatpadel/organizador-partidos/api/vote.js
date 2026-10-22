@@ -2,9 +2,10 @@
 // La primera vez recibe { pid, key }: el navegador las guarda para poder editar después.
 import { storageReady, STORAGE_MSG } from './_lib/store.js';
 import { getJSON, putJSON } from './_lib/store.js';
+import { upsertPlayer } from './_lib/players.js';
 import {
   json, fail, readBody, clean, isId, newId, newKey, sha, sameHash,
-  LEVELS, cleanEmail, cleanPhone,
+  LEVELS, cleanEmail, cleanPhone, cleanSide, sanitizeAvail,
 } from './_lib/util.js';
 
 export async function POST(request) {
@@ -29,13 +30,7 @@ export async function POST(request) {
   const consent = Boolean(b.consent);
   if (consent && !email && !phone) return fail('Para recibir novedades dejanos un mail o un WhatsApp.');
 
-  // Disponibilidad: por día, una cadena con 0 (no), 1 (si no queda otra) o 2 (puedo) por bloque de 30 min.
-  const slots = (match.to - match.from) / match.step;
-  const avail = {};
-  for (const day of match.days) {
-    const raw = typeof b.avail?.[day] === 'string' ? b.avail[day] : '';
-    avail[day] = raw.replace(/[^012]/g, '0').padEnd(slots, '0').slice(0, slots);
-  }
+  const avail = sanitizeAvail(match, b.avail);
 
   const now = new Date().toISOString();
   let pid = b.pid;
@@ -59,6 +54,8 @@ export async function POST(request) {
     pid,
     name,
     level,
+    side: cleanSide(b.side),
+    organizer: Boolean(previous?.organizer),
     email,
     phone,
     consent,
@@ -74,26 +71,4 @@ export async function POST(request) {
   await upsertPlayer(vote, match.id).catch(() => {});
 
   return json({ pid, key, ok: true }, previous ? 200 : 201);
-}
-
-/** Base de jugadores de GOAT PADEL: una ficha por contacto (mail o WhatsApp). */
-async function upsertPlayer(vote, matchId) {
-  const contact = vote.email || vote.phone;
-  const playerKey = contact ? sha(contact).slice(0, 24) : `g-${vote.pid}`;
-  const path = `players/${playerKey}.json`;
-  const prev = (await getJSON(path)) || {};
-  const now = new Date().toISOString();
-  const matches = [...new Set([...(prev.matches || []), matchId])].slice(-200);
-  await putJSON(path, {
-    name: vote.name,
-    email: vote.email || prev.email || '',
-    phone: vote.phone || prev.phone || '',
-    level: vote.level,
-    consent: vote.consent,
-    consentAt: vote.consent ? prev.consentAt || now : null,
-    source: 'organizador-partidos',
-    firstSeen: prev.firstSeen || now,
-    lastSeen: now,
-    matches,
-  });
 }

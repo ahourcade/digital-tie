@@ -4,6 +4,7 @@ import { storageReady, STORAGE_MSG } from './_lib/store.js';
 import { listPaths, getMany } from './_lib/store.js';
 import { fail, sameHash, sha } from './_lib/util.js';
 
+const SIDE_LABEL = { drive: 'Drive', reves: 'Revés', ambos: 'Ambos' };
 const LEVEL_LABEL = { 9: 'Novena', 8: 'Octava', 7: 'Séptima', 6: 'Sexta', 5: 'Quinta', 4: 'Cuarta', '3+': 'Tercera o más', nose: 'No sabe' };
 
 export async function GET(request) {
@@ -20,9 +21,9 @@ export async function GET(request) {
 
   const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
   const rows = [
-    ['Nombre', 'Email', 'WhatsApp', 'Categoría', 'Acepta marketing', 'Fecha consentimiento', 'Primera vez', 'Última vez', 'Partidos'],
+    ['Nombre', 'Email', 'WhatsApp', 'Categoría', 'Juega de', 'Acepta marketing', 'Fecha consentimiento', 'Primera vez', 'Última vez', 'Partidos'],
     ...players.map((p) => [
-      p.name, p.email, p.phone, LEVEL_LABEL[p.level] || '', p.consent ? 'Sí' : 'No',
+      p.name, p.email, p.phone, LEVEL_LABEL[p.level] || '', SIDE_LABEL[p.side] || '', p.consent ? 'Sí' : 'No',
       p.consentAt || '', p.firstSeen, p.lastSeen, (p.matches || []).length,
     ]),
   ];
