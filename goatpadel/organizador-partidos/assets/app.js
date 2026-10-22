@@ -388,34 +388,37 @@ function renderCreatePage() {
     renderOrgGrid();
   }
 
-  // Rehace la grilla conservando lo ya marcado. Lo nuevo dentro del horario arranca como "Puedo".
+  // Lo marcado por el organizador se guarda por día y minuto, así no se pierde
+  // al cambiar días u horarios (ni al quedar sin días seleccionados).
+  const marks = {};      // día -> { minuto: "0" | "1" | "2" }
+  let curM = null;       // partido provisorio dibujado en la grilla
+  function saveMarks() {
+    if (!curM) return;
+    for (const d of curM.days) {
+      if (typeof orgDraft[d] !== 'string') continue;
+      marks[d] = marks[d] || {};
+      [...orgDraft[d]].forEach((v, i) => { if (inWin(curM, d, i)) marks[d][curM.from + i * curM.step] = v; });
+    }
+  }
+
+  // Rehace la grilla. Lo nuevo dentro del horario arranca como "Puedo".
   function renderOrgGrid() {
     const days = selectedDays();
-    if (!days.length) { $('#orgGrid').innerHTML = ''; return; }
+    for (const k of Object.keys(orgDraft)) delete orgDraft[k];
+    if (!days.length) { curM = null; $('#orgGrid').innerHTML = ''; return; }
     const m = draftMatch();
     const n = slotsCount(m);
-    const prev = { ...orgDraft };
-    for (const k of Object.keys(orgDraft)) delete orgDraft[k];
     for (const d of days) {
       let s = '';
-      for (let i = 0; i < n; i++) {
-        const t = m.from + i * m.step;
-        const old = prev[d]?.[t];
-        s += inWin(m, d, i) ? (old ?? '2') : '0';
-      }
+      for (let i = 0; i < n; i++) s += inWin(m, d, i) ? (marks[d]?.[m.from + i * m.step] ?? '2') : '0';
       orgDraft[d] = s;
     }
-    // Guardamos lo marcado por minuto para no perderlo si cambia el rango general.
+    curM = m;
     buildGrid($('#orgGrid'), m, { editable: true, draft: orgDraft, getMode: () => orgMode });
-    orgByMinute = () => Object.fromEntries(days.map((d) => [d, Object.fromEntries([...orgDraft[d]].map((v, i) => [m.from + i * m.step, v]))]));
   }
-  let orgByMinute = () => ({});
-  // Antes de rehacer, convertimos lo marcado a "minuto -> valor".
   const rebuild = (fn) => {
-    const snap = orgByMinute();
+    saveMarks();
     fn();
-    for (const k of Object.keys(orgDraft)) delete orgDraft[k];
-    Object.assign(orgDraft, snap);
     renderWindows();
   };
 
