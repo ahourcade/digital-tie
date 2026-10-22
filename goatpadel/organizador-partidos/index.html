@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8" />
+  <script>
+    // Esta app vive en una subcarpeta: sin la barra final, las rutas relativas apuntarían al sitio padre.
+    (function () {
+      var p = location.pathname;
+      if (!/\/$/.test(p) && !/\.html$/.test(p)) location.replace(p + '/' + location.search + location.hash);
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Organizador de partidos · GOAT PADEL</title>
+  <meta name="description" content="Armá tu partido de pádel sin el ida y vuelta de mensajes: cada uno marca cuándo puede y el organizador encuentra el horario para los 4." />
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#14213d" />
+  <meta property="og:title" content="Organizador de partidos · GOAT PADEL" />
+  <meta property="og:description" content="Marcá cuándo podés jugar y encontramos el horario para los 4." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div class="stripes" aria-hidden="true"></div>
+  <header class="topbar">
+    <div class="wrap">
+      <a class="brand" href="./" aria-label="Organizador GOAT PADEL, inicio">
+        <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+          <rect width="40" height="40" rx="11" fill="#14213d" />
+          <rect x="0" y="27" width="40" height="3" fill="#7b1e2c" />
+          <rect x="0" y="32" width="40" height="2" fill="#fbf8f1" />
+          <text x="20" y="22" text-anchor="middle" font-family="Archivo, sans-serif" font-style="italic" font-weight="900" font-size="17" fill="#fbf8f1" style="font-variation-settings:'wdth' 125">G</text>
+        </svg>
+        <span class="brand-word">GOAT Padel<small>Organizador de partidos</small></span>
+      </a>
+      <nav><a class="btn btn-sm" href="./">Nuevo partido</a></nav>
+    </div>
+  </header>
+
+  <main id="app" class="wrap"><div class="loading">Cargando…</div></main>
+
+  <footer class="site">
+    <div class="wrap">
+      <span class="brand-word">GOAT Padel</span>
+      <span>Equipamiento de pádel a precio justo · <a href="https://goatpadel.com.ar" target="_blank" rel="noopener">goatpadel.com.ar</a></span>
+      <a href="privacidad.html">Privacidad</a>
+    </div>
+  </footer>
+
+  <script type="module" src="assets/app.js"></script>
+</body>
+</html>
