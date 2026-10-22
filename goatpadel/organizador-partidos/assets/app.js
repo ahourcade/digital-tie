@@ -211,7 +211,7 @@ function renderCreatePage() {
         <div class="row">
           <div class="field">
             <label for="fOrg">Tu nombre</label>
-            <input id="fOrg" type="text" maxlength="40" autocomplete="given-name" required value="${esc(profile.name || '')}" placeholder="Ej.: Juan" />
+            <input id="fOrg" type="text" maxlength="40" autocomplete="off" required placeholder="Ej.: Juan" />
           </div>
           <div class="field">
             <label for="fTitle">Nombre del partido <span class="muted">(opcional)</span></label>
@@ -937,7 +937,7 @@ function renderMine() {
     <div class="card-head"><h2>${saved ? 'Tu disponibilidad' : '¿Cuándo podés?'}</h2>${saved ? `<span class="tag ok">Guardado</span>` : ''}</div>
 
     <div class="row">
-      <div class="field"><label for="vName">Tu nombre</label><input id="vName" type="text" maxlength="40" autocomplete="given-name" value="${esc(saved?.name || profile.name || '')}" placeholder="Nombre o apodo" /></div>
+      <div class="field"><label for="vName">Tu nombre</label><input id="vName" type="text" maxlength="40" autocomplete="off" value="${esc(saved?.name || '')}" placeholder="Ej.: Juan" /></div>
       <div class="field"><label for="vLevel">Tu categoría</label>
         <select id="vLevel">${LEVELS.map(([v, l]) => `<option value="${v}" ${(saved?.level || profile.level || 'nose') === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
       </div>

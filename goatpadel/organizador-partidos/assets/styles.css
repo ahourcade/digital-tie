@@ -310,3 +310,5 @@ footer.site .foot-logo { height: 40px; }
 .win-row select { min-height: 42px; padding: 8px 10px; }
 .subcard { background: var(--sand); border-radius: var(--radius); padding: 16px; margin: 6px 0 16px; }
 .subcard h3 { margin-bottom: 4px; }
+
+input::placeholder, textarea::placeholder { color: #a8a49c; opacity: 1; }
