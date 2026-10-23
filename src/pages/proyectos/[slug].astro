@@ -21,7 +21,7 @@ const webs = p.gallery.filter((g) => g.kind === 'web');
 const images = p.gallery.filter((g) => g.kind === 'image');
 const socials = p.gallery.filter((g) => g.kind === 'social');
 const related = relatedProjects(p, 3);
-const list = PROJECTS.filter((x) => !x.archive || p.archive);
+const list = PROJECTS;
 const next = list[(list.findIndex((x) => x.slug === p.slug) + 1) % list.length];
 const og = await getImage({ src: img(p.cover), width: 1200, height: 630, fit: 'cover', format: 'jpg', quality: 80 });
 const host = (u: string) => u.replace(/^https?:\/\//, '').replace(/\/$/, '');
@@ -60,7 +60,7 @@ const schema = [{
               <Image src={img(p.logo.src)} alt={p.logo.alt} height={56} densities={[1, 2]} loading="eager" />
             </div>
           ) : (
-            <p class="label">{p.archive ? 'Archivo' : 'Caso'} · {p.industry}</p>
+            <p class="label">Caso · {p.industry}</p>
           )}
           <h1 class="h1">{p.client}</h1>
           <p class="lead">{p.summary}</p>
@@ -69,6 +69,9 @@ const schema = [{
           <div><dt class="label">Industria</dt><dd>{p.industry}</dd></div>
           <div><dt class="label">Rol de Digital Tie</dt><dd>{p.role}</dd></div>
           <div><dt class="label">Disciplinas</dt><dd><ul class="tags" role="list">{p.categories.map((c) => <li class="tag"><a href={`/proyectos/?cat=${c}`}>{categoryLabel(c)}</a></li>)}</ul></dd></div>
+          {p.offline && (
+            <div><dt class="label">Estado</dt><dd class="offline"><span class="dot" aria-hidden="true"></span>Sitio ya dado de baja</dd></div>
+          )}
           {(p.link || p.social) && (
             <div><dt class="label">Enlaces</dt><dd class="links">
               {p.link && <a class="link-arrow" href={p.link.url} target="_blank" rel="noopener noreferrer">{p.link.label} <span class="arrow" aria-hidden="true">↗</span></a>}
@@ -82,6 +85,16 @@ const schema = [{
     <div class="container hero-media">
       <Plate src={p.cover} alt={p.coverAlt} plate={p.plate} fit={p.coverFit ?? 'contain'} ratio="16 / 9" sizes="(min-width: 1440px) 1312px, 100vw" priority />
     </div>
+
+    {p.metrics && (
+      <section class="container metrics" aria-labelledby="g-metrics">
+        <h2 class="label label--fg" id="g-metrics">Resultados medidos</h2>
+        <dl class="metric-grid">
+          {p.metrics.map((m) => <div class="metric"><dd class="metric-v num">{m.value}</dd><dt class="metric-l small">{m.label}</dt></div>)}
+        </dl>
+        {p.metricsSource && <p class="small muted">Fuente: {p.metricsSource}</p>}
+      </section>
+    )}
 
     <section class="container story" aria-label="Sobre el proyecto">
       <div class="story-block">
@@ -210,6 +223,15 @@ const schema = [{
   .facts .tag a { text-decoration: none; }
   .facts .tag:hover { border-color: var(--ink); color: var(--ink); }
   .links { display: grid; gap: 8px; justify-items: start; }
+  .offline { display: inline-flex; align-items: center; gap: 8px; color: var(--fg-muted); }
+  .offline .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; opacity: .5; }
+  .metrics { display: grid; gap: var(--s-5); margin-top: var(--s-8); margin-bottom: var(--s-7); }
+  .metric-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--line, rgba(12,21,37,.12)); border: 1px solid var(--line, rgba(12,21,37,.12)); margin: 0; }
+  @media (min-width: 768px) { .metric-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 1100px) { .metric-grid { grid-template-columns: repeat(6, 1fr); } }
+  .metric { display: flex; flex-direction: column-reverse; justify-content: flex-end; gap: 6px; padding: 20px; background: var(--bg, #fff); }
+  .metric-v { margin: 0; font-size: var(--fs-h3); font-weight: 700; letter-spacing: -0.03em; line-height: 1; color: var(--blue); }
+  .metric-l { color: var(--fg-muted); }
   @media (min-width: 1024px) {
     .head-grid { grid-template-columns: repeat(12, 1fr); column-gap: var(--gap); }
     .head-main { grid-column: 1 / span 7; }

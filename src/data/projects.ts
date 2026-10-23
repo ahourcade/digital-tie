@@ -61,7 +61,10 @@ export interface Project {
   gallery: GalleryItem[];
   subbrands?: SubBrand[];
   featured?: number; // orden en home
-  archive?: boolean; // trabajo histórico con documentación mínima
+  archive?: boolean; // (en desuso) todos los trabajos se muestran igual
+  offline?: boolean; // el sitio/landing ya no está en línea → se muestra «Sitio ya dado de baja»
+  metrics?: { value: string; label: string }[]; // solo métricas documentadas (con fuente)
+  metricsSource?: string;
   seoDescription?: string;
 }
 
@@ -361,14 +364,55 @@ export const PROJECTS: Project[] = [
     industry: 'Industria y construcción',
     role: 'Diseño y desarrollo web',
     categories: ['web'],
-    cover: 'steel-plastic/web-full.png',
-    coverAlt: 'Captura del sitio web de Steel Plastic',
+    cover: 'steel-plastic/cover.webp',
+    coverAlt: 'Home del sitio de Steel Plastic: Renovar tu casa está a un click de distancia',
     plate: 'mist',
-    coverFit: 'contain',
+    coverFit: 'cover',
     link: { label: 'steelplastic.com.ar', url: 'https://steelplastic.com.ar/' },
     context: ['Sitio institucional para una empresa fabricante de perfiles, cielorrasos, cortinas y otras soluciones en PVC. Presenta la empresa, sus líneas de producto y las marcas con las que trabaja, con accesos directos a contacto.'],
     deliverables: ['Diseño del sitio institucional', 'Desarrollo web'],
-    gallery: [{ kind: 'web', src: 'steel-plastic/web-full.png', alt: 'Captura del sitio de Steel Plastic', caption: 'Captura del sitio (presentación 2023)' }],
+    gallery: [{ kind: 'web', src: 'steel-plastic/web-full.png', alt: 'Captura completa de la home de steelplastic.com.ar', caption: 'Home completa de steelplastic.com.ar' }],
+  },
+
+  /* ───────────────────────── RAVANA ───────────────────────── */
+  {
+    slug: 'ravana',
+    client: 'Ravana',
+    headline: 'Mantenimiento mensual, performance y SEO técnico',
+    summary: 'Nos ocupamos del mantenimiento mensual del sitio de Ravana y de optimizar su velocidad y su SEO técnico. Hoy el sitio obtiene nota A en GTmetrix.',
+    industry: 'Alimentos y consumo masivo',
+    role: 'Mantenimiento web · Optimización de performance · SEO técnico',
+    categories: ['web'],
+    cover: 'ravana/cover.webp',
+    coverAlt: 'Home de ravana.com.ar: nuevos budines de vainilla y chocolate',
+    plate: 'mist',
+    coverFit: 'cover',
+    link: { label: 'ravana.com.ar', url: 'https://ravana.com.ar/' },
+    context: [
+      'Ravana es una marca argentina de mezclas para postres: bizcochuelos, gelatinas, flanes, mousses y cacao. Su sitio reúne el catálogo de productos, recetas, tips de cocina y el feed de Instagram, con mucha imagen de producto en alta calidad.',
+      'Nuestro trabajo es mantenerlo sano mes a mes: actualizaciones, seguridad y backups, más una optimización continua de performance (imágenes, caché, carga de scripts) y de SEO técnico. El resultado se mide: nota A en GTmetrix, con carga del contenido principal en un segundo y cero saltos de diseño.',
+    ],
+    deliverables: [
+      'Mantenimiento mensual: actualizaciones, seguridad y backups',
+      'Optimización de imágenes y carga de recursos',
+      'Configuración de caché y mejoras de Core Web Vitals',
+      'SEO técnico: estructura, metadatos e indexación',
+      'Monitoreo y reportes de rendimiento',
+    ],
+    metrics: [
+      { value: 'A', label: 'Nota GTmetrix' },
+      { value: '89%', label: 'Performance' },
+      { value: '95%', label: 'Structure' },
+      { value: '1,0 s', label: 'Largest Contentful Paint' },
+      { value: '42 ms', label: 'Total Blocking Time' },
+      { value: '0', label: 'Cumulative Layout Shift' },
+    ],
+    metricsSource: 'Informe GTmetrix (Lighthouse 12.6.1) del 22 de septiembre de 2026.',
+    gallery: [
+      { kind: 'web', src: 'ravana/home-full.png', alt: 'Captura completa de la home de ravana.com.ar', caption: 'Home completa de ravana.com.ar' },
+      { kind: 'image', src: 'ravana/gtmetrix.png', alt: 'Informe de GTmetrix de ravana.com.ar: nota A, Performance 89%, Structure 95%, LCP 1,0 s, TBT 42 ms, CLS 0', caption: 'Informe GTmetrix — septiembre 2026' },
+    ],
+    seoDescription: 'Caso Ravana: mantenimiento mensual del sitio, optimización de performance y SEO técnico. Nota A en GTmetrix, LCP de 1,0 s y CLS 0.',
   },
 
   /* ───────────────────────── BRANDING ───────────────────────── */
@@ -493,7 +537,7 @@ export const PROJECTS: Project[] = [
     ],
   },
 
-  /* ───────────────────────── ARCHIVO (presentación 2023) ───────────────────────── */
+  /* ───────────────────────── ARCHIVO ───────────────────────── */
   {
     slug: 'bcg-architects',
     client: 'BCG Architects',
@@ -509,8 +553,7 @@ export const PROJECTS: Project[] = [
     link: { label: 'bcg-ae.com.ar', url: 'https://bcg-ae.com.ar/' },
     context: ['Sitio institucional con presentación del estudio y proyectos destacados.'],
     deliverables: ['Diseño web', 'Desarrollo'],
-    gallery: [{ kind: 'web', src: 'bcg-architects/web-full.png', alt: 'Captura del sitio de BCG Architects', caption: 'Captura del sitio (presentación 2023)' }],
-    archive: true,
+    gallery: [{ kind: 'web', src: 'bcg-architects/web-full.png', alt: 'Captura del sitio de BCG Architects', caption: 'Captura del sitio' }],
   },
   {
     slug: 'tk-hockey',
@@ -530,13 +573,12 @@ export const PROJECTS: Project[] = [
       { kind: 'image', src: 'tk-hockey/ad-1.jpg', alt: 'Anuncio de TK Hockey: Llevá tu juego a otro nivel', caption: 'Anuncio para Facebook Ads' },
       { kind: 'image', src: 'tk-hockey/ad-2.jpg', alt: 'Anuncio de TK Hockey: Sé parte de la revolución', caption: 'Anuncio para Facebook Ads' },
     ],
-    archive: true,
   },
   {
     slug: 'chivas',
     client: 'Chivas',
     headline: 'Sitio promocional y email marketing',
-    summary: 'Sitio promocional y piezas de email marketing documentadas en la presentación histórica de la agencia.',
+    summary: 'Sitio promocional y piezas de email marketing para campañas de la marca.',
     industry: 'Bebidas',
     role: 'Sitio promocional · Email marketing',
     categories: ['web', 'campanas'],
@@ -546,8 +588,8 @@ export const PROJECTS: Project[] = [
     coverFit: 'contain',
     context: ['Diseño y desarrollo del sitio promocional «Chivas Tasting»: la inscripción a una cata se habilitaba con un código entregado en la compra de whiskies seleccionados. También diseñamos mailings para distintas campañas de la marca.'],
     deliverables: ['Sitio promocional', 'Email marketing'],
-    gallery: [{ kind: 'image', src: 'chivas/slide.webp', alt: 'Sitio promocional Chivas Tasting en una laptop', caption: 'Sitio promocional (presentación 2023)' }],
-    archive: true,
+    offline: true,
+    gallery: [{ kind: 'image', src: 'chivas/slide.webp', alt: 'Sitio promocional Chivas Tasting en una laptop', caption: 'Sitio promocional' }],
   },
   {
     slug: 'fernet-branca',
@@ -563,8 +605,8 @@ export const PROJECTS: Project[] = [
     coverFit: 'contain',
     context: ['Micrositio del Día del Bartender para la marca: desde la maquetación hasta el desarrollo responsive, en cada detalle.'],
     deliverables: ['Micrositio promocional'],
-    gallery: [{ kind: 'image', src: 'fernet-branca/slide.webp', alt: 'Micrositio Cocktail Homenaje del Día del Bartender', caption: 'Micrositio (presentación 2023)' }],
-    archive: true,
+    offline: true,
+    gallery: [{ kind: 'image', src: 'fernet-branca/slide.webp', alt: 'Micrositio Cocktail Homenaje del Día del Bartender', caption: 'Micrositio' }],
   },
   {
     slug: 'jameson',
@@ -584,7 +626,6 @@ export const PROJECTS: Project[] = [
       { kind: 'image', src: 'jameson/main.webp', alt: 'Banners display de Jameson en distintos formatos', caption: 'Display' },
       { kind: 'image', src: 'jameson/banner.jpg', alt: 'Banner de Jameson: Jameson & Beer. Why? Taste, that’s why.', caption: 'Banner display' },
     ],
-    archive: true,
   },
   {
     slug: 'absolut',
@@ -601,7 +642,6 @@ export const PROJECTS: Project[] = [
     context: ['Campaña de emailing con objetivos de lanzamiento, compra online e información al cliente.'],
     deliverables: ['Email marketing'],
     gallery: [{ kind: 'image', src: 'absolut/main.webp', alt: 'Mailing de Absolut', caption: 'Pieza original' }],
-    archive: true,
   },
   {
     slug: 'nutricia-app',
@@ -617,10 +657,10 @@ export const PROJECTS: Project[] = [
     coverFit: 'contain',
     context: ['Aplicación con herramientas interactivas para el usuario: curvas de crecimiento, guías, vademécum y contenidos multimedia, con resultados clínicos reales.'],
     deliverables: ['Diseño de interfaz', 'Desarrollo de app'],
+    offline: true,
     gallery: [
-      { kind: 'image', src: 'nutricia-app/slide.webp', alt: 'App de Nutricia Profesional en dos celulares', caption: 'App (presentación 2023)' },
+      { kind: 'image', src: 'nutricia-app/slide.webp', alt: 'App de Nutricia Profesional en dos celulares', caption: 'App' },
     ],
-    archive: true,
   },
   {
     slug: 'bodegas-etchart',
@@ -641,10 +681,9 @@ export const PROJECTS: Project[] = [
     ],
     deliverables: ['Diseño y desarrollo del sitio', 'Página de lanzamiento de producto', 'Experiencia responsive'],
     gallery: [
-      { kind: 'image', src: 'bodegas-etchart/main.webp', alt: 'Sitio de Cafayate en una laptop', caption: 'Sitio de la marca (presentación 2023)' },
-      { kind: 'image', src: 'bodegas-etchart/rutas-de-cafayate.webp', alt: 'Página de Rutas de Cafayate con mapa ilustrado', caption: 'Lanzamiento Rutas de Cafayate (presentación 2023)' },
+      { kind: 'image', src: 'bodegas-etchart/main.webp', alt: 'Sitio de Cafayate en una laptop', caption: 'Sitio de la marca' },
+      { kind: 'image', src: 'bodegas-etchart/rutas-de-cafayate.webp', alt: 'Página de Rutas de Cafayate con mapa ilustrado', caption: 'Lanzamiento Rutas de Cafayate' },
     ],
-    archive: true,
   },
   {
     slug: 'bodega-septima',
@@ -661,8 +700,7 @@ export const PROJECTS: Project[] = [
     link: { label: 'bodegaseptima.com', url: 'http://www.bodegaseptima.com/' },
     context: ['El sitio permite conocer la bodega, su restorán y las opciones de turismo que ofrece, con imágenes y videos de alto impacto.'],
     deliverables: ['Diseño y desarrollo del sitio', 'Contenidos de turismo y gastronomía'],
-    gallery: [{ kind: 'image', src: 'bodega-septima/main.webp', alt: 'Sitio de Bodega Séptima', caption: 'Sitio (presentación 2023)' }],
-    archive: true,
+    gallery: [{ kind: 'image', src: 'bodega-septima/main.webp', alt: 'Sitio de Bodega Séptima', caption: 'Sitio' }],
   },
   {
     slug: 'andreani',
@@ -678,8 +716,8 @@ export const PROJECTS: Project[] = [
     coverFit: 'cover',
     context: ['Para la inauguración de una nueva planta desarrollamos la landing de registro al evento, una app mobile para que las promotoras acreditaran a los invitados con tablets y código QR, y la gestión de la base de inscriptos y ausentes.'],
     deliverables: ['Landing RSVP', 'App mobile de acreditación con QR', 'Gestión de base de inscriptos'],
-    gallery: [{ kind: 'image', src: 'andreani/main.webp', alt: 'Landing de registro de Andreani en una tablet', caption: 'Landing RSVP (presentación 2023)' }],
-    archive: true,
+    offline: true,
+    gallery: [{ kind: 'image', src: 'andreani/main.webp', alt: 'Landing de registro de Andreani en una tablet', caption: 'Landing RSVP' }],
   },
   {
     slug: 'bicoco',
@@ -695,8 +733,8 @@ export const PROJECTS: Project[] = [
     coverFit: 'cover',
     context: ['Bicoco desarrolla una app de realidad aumentada. La landing tenía un objetivo concreto: capturar leads de campañas de anuncios segmentadas para Latinoamérica y Norteamérica.'],
     deliverables: ['Diseño y desarrollo de landing', 'Integración con campañas'],
-    gallery: [{ kind: 'image', src: 'bicoco/main.webp', alt: 'Landing de Bicoco', caption: 'Landing (presentación 2023)' }],
-    archive: true,
+    offline: true,
+    gallery: [{ kind: 'image', src: 'bicoco/main.webp', alt: 'Landing de Bicoco', caption: 'Landing' }],
   },
   {
     slug: 'sere-baby',
@@ -712,8 +750,8 @@ export const PROJECTS: Project[] = [
     coverFit: 'cover',
     context: ['Un sitio de entretenimiento con diez juegos interactivos, pensado para usarse en celulares y tablets.'],
     deliverables: ['Diseño UX', 'Desarrollo de 10 juegos interactivos'],
-    gallery: [{ kind: 'image', src: 'sere-baby/main.webp', alt: 'Sitio de juegos de Sere Baby', caption: 'Sitio (presentación 2023)' }],
-    archive: true,
+    offline: true,
+    gallery: [{ kind: 'image', src: 'sere-baby/main.webp', alt: 'Sitio de juegos de Sere Baby', caption: 'Sitio' }],
   },
   {
     slug: 'beefeater',
@@ -734,7 +772,6 @@ export const PROJECTS: Project[] = [
       { kind: 'image', src: 'beefeater/banner-4.png', alt: 'Banner 300×250 de Beefeater', caption: '300×250' },
       { kind: 'image', src: 'beefeater/banner-1.png', alt: 'Banner 728×90 de Beefeater', caption: '728×90' },
     ],
-    archive: true,
   },
 ];
 

@@ -32,6 +32,7 @@ const defaultSizes = size === 'xl' ? '(min-width: 1024px) 66vw, 100vw' : size ==
     </div>
     <H class="title"><a href={`/proyectos/${p.slug}/`} data-track="click_project" data-track-label={p.slug}>{p.client}</a></H>
     <p class="headline">{p.headline}</p>
+    {p.offline && <p class="offline small">Sitio ya dado de baja</p>}
     <span class="more" aria-hidden="true">Ver caso <span class="arrow">→</span></span>
   </div>
 </article>
@@ -51,6 +52,7 @@ const defaultSizes = size === 'xl' ? '(min-width: 1024px) 66vw, 100vw' : size ==
   .title a { text-decoration: none; }
   .title a::after { content: ''; position: absolute; inset: 0; z-index: 1; border-radius: var(--radius); }
   .headline { color: var(--fg-muted); max-width: 46ch; }
+  .offline { color: var(--fg-muted); font-style: italic; }
   .more { font-weight: 700; font-size: .9375rem; display: inline-flex; gap: .4em; margin-top: 4px; }
   .more .arrow { transition: transform var(--t) var(--ease); }
   .card:hover .more .arrow, .card:focus-within .more .arrow { transform: translateX(4px); }

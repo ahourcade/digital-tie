@@ -2,10 +2,9 @@
 import Base from '../../layouts/Base.astro';
 import ProjectCard from '../../components/ProjectCard.astro';
 import CtaBand from '../../components/CtaBand.astro';
-import { PROJECTS, CATEGORIES, mainProjects, archiveProjects } from '../../data/projects';
+import { PROJECTS, CATEGORIES } from '../../data/projects';
 
-const main = mainProjects();
-const archive = archiveProjects();
+const main = PROJECTS;
 const counts = Object.fromEntries(CATEGORIES.map((c) => [c.key, PROJECTS.filter((p) => p.categories.includes(c.key)).length]));
 const schema = [{
   '@context': 'https://schema.org',
@@ -45,16 +44,6 @@ const schema = [{
     <ul class="grid" role="list" data-group="main">
       {main.map((p, i) => <li data-item><ProjectCard project={p} size="md" headingLevel="h2" priority={i < 3} /></li>)}
     </ul>
-
-    <div class="archive" data-archive>
-      <div class="archive-head">
-        <h2 class="h3">Archivo</h2>
-        <p class="muted small">Trabajos anteriores documentados en la presentación institucional 2023.</p>
-      </div>
-      <ul class="grid grid--archive" role="list" data-group="archive">
-        {archive.map((p) => <li data-item><ProjectCard project={p} size="sm" headingLevel="h3" sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" /></li>)}
-      </ul>
-    </div>
 
     <div class="empty" hidden data-empty>
       <p class="h3">No encontramos proyectos con esa búsqueda.</p>
@@ -108,22 +97,20 @@ const schema = [{
   const q = document.getElementById('q') as HTMLInputElement;
   const status = document.getElementById('status')!;
   const empty = document.querySelector<HTMLElement>('[data-empty]')!;
-  const archive = document.querySelector<HTMLElement>('[data-archive]')!;
   const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
   let cat = 'all';
 
   const apply = (push = true) => {
     const term = norm(q.value);
-    let n = 0, nArchive = 0;
+    let n = 0;
     for (const li of items) {
       const card = li.querySelector<HTMLElement>('[data-card]')!;
       const okCat = cat === 'all' || card.dataset.cats!.split(' ').includes(cat);
       const okQ = !term || card.dataset.name!.includes(term);
       const show = okCat && okQ;
       li.hidden = !show;
-      if (show) { n++; if (li.closest('[data-archive]')) nArchive++; }
+      if (show) n++;
     }
-    archive.hidden = nArchive === 0;
     empty.hidden = n > 0;
     const label = buttons.find((b) => b.dataset.filter === cat)?.firstChild?.textContent?.trim();
     status.textContent = n === 0 ? 'No hay proyectos que coincidan.' : `Mostrando ${n} ${n === 1 ? 'proyecto' : 'proyectos'}${cat !== 'all' ? ` de ${label}` : ''}${term ? ` para «${q.value.trim()}»` : ''}`;
