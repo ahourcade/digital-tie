@@ -775,6 +775,9 @@ export const PROJECTS: Project[] = [
   },
 ];
 
+/** Selección curada de sitios web: se muestran primero en Servicios y en el filtro «Web». */
+export const WEB_PICKS = ['recetario-ivess', 'homer-and-co', 'starnet', 'steel-plastic', 'bcg-architects'];
+
 export const featuredProjects = () =>
   PROJECTS.filter((p) => p.featured).sort((a, b) => (a.featured ?? 99) - (b.featured ?? 99));
 export const mainProjects = () => PROJECTS.filter((p) => !p.archive);

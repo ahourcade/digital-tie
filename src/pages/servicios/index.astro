@@ -3,9 +3,10 @@ import Base from '../../layouts/Base.astro';
 import CtaBand from '../../components/CtaBand.astro';
 import ProjectCard from '../../components/ProjectCard.astro';
 import { SERVICES } from '../../data/services';
-import { PROJECTS } from '../../data/projects';
+import { PROJECTS, WEB_PICKS, projectBySlug } from '../../data/projects';
 
-const examples = (cat?: string) => (cat ? PROJECTS.filter((p) => p.categories.includes(cat as any) && !p.archive).slice(0, 2) : []);
+const examples = (cat?: string) =>
+  !cat ? [] : cat === 'web' ? WEB_PICKS.map((s) => projectBySlug(s)!).filter(Boolean) : PROJECTS.filter((p) => p.categories.includes(cat as any)).slice(0, 2);
 const schema = SERVICES.map((s) => ({
   '@context': 'https://schema.org', '@type': 'Service', name: s.name, description: s.description,
   provider: { '@type': 'Organization', name: 'Digital Tie', url: Astro.site?.href },
@@ -47,7 +48,7 @@ const schema = SERVICES.map((s) => ({
           </div>
         </div>
         {examples(s.category).length > 0 && (
-          <ul class="ex" role="list" aria-label={`Ejemplos de ${s.name}`}>
+          <ul class:list={['ex', examples(s.category).length > 2 && 'ex--many']} role="list" aria-label={`Ejemplos de ${s.name}`}>
             {examples(s.category).map((p) => <li><ProjectCard project={p} size="md" /></li>)}
           </ul>
         )}
@@ -76,6 +77,7 @@ const schema = SERVICES.map((s) => ({
   .svc-links { display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: center; font-size: 1rem; }
   .ex { display: grid; gap: var(--gap); margin: 0; }
   @media (min-width: 700px) { .ex { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1024px) { .ex--many { grid-template-columns: repeat(3, 1fr); } }
   @media (min-width: 1024px) {
     .svc-grid { grid-template-columns: repeat(12, 1fr); column-gap: var(--gap); }
     .svc-head { grid-column: 1 / span 5; }

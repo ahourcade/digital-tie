@@ -2,7 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import ProjectCard from '../../components/ProjectCard.astro';
 import CtaBand from '../../components/CtaBand.astro';
-import { PROJECTS, CATEGORIES } from '../../data/projects';
+import { PROJECTS, CATEGORIES, WEB_PICKS } from '../../data/projects';
 
 const main = PROJECTS;
 const counts = Object.fromEntries(CATEGORIES.map((c) => [c.key, PROJECTS.filter((p) => p.categories.includes(c.key)).length]));
@@ -42,7 +42,7 @@ const schema = [{
     <p class="status small muted" id="status" role="status" aria-live="polite">Mostrando {PROJECTS.length} proyectos</p>
 
     <ul class="grid" role="list" data-group="main">
-      {main.map((p, i) => <li data-item><ProjectCard project={p} size="md" headingLevel="h2" priority={i < 3} /></li>)}
+      {main.map((p, i) => <li data-item data-webrank={WEB_PICKS.indexOf(p.slug)}><ProjectCard project={p} size="md" headingLevel="h2" priority={i < 3} /></li>)}
     </ul>
 
     <div class="empty" hidden data-empty>
@@ -109,6 +109,8 @@ const schema = [{
       const okQ = !term || card.dataset.name!.includes(term);
       const show = okCat && okQ;
       li.hidden = !show;
+      const r = Number(li.dataset.webrank ?? -1);
+      li.style.order = cat === 'web' && r >= 0 ? String(r - 100) : '';
       if (show) n++;
     }
     empty.hidden = n > 0;
