@@ -30,7 +30,7 @@ export async function POST(request) {
   const consent = Boolean(b.consent);
   if (consent && !email && !phone) return fail('Para recibir novedades dejanos un mail o un WhatsApp.');
 
-  const avail = sanitizeAvail(match, b.avail);
+  let avail = sanitizeAvail(match, b.avail);
 
   const now = new Date().toISOString();
   let pid = b.pid;
@@ -48,6 +48,14 @@ export async function POST(request) {
   } else {
     pid = newId(10);
     key = newKey();
+  }
+
+  // Los invitados solo pueden marcar dentro de los horarios del organizador.
+  if (match.orgAvail && !previous?.organizer) {
+    for (const day of match.days) {
+      const org = match.orgAvail[day] || '';
+      avail[day] = [...avail[day]].map((c, i) => ((org[i] || '0') === '0' ? '0' : c)).join('');
+    }
   }
 
   const vote = {
@@ -68,6 +76,11 @@ export async function POST(request) {
   };
 
   await putJSON(`matches/${match.id}/votes/${pid}.json`, vote);
+  if (vote.organizer) {
+    match.orgAvail = avail;
+    match.updatedAt = now;
+    await putJSON(`matches/${match.id}/match.json`, match);
+  }
   await upsertPlayer(vote, match.id).catch(() => {});
 
   return json({ pid, key, ok: true }, previous ? 200 : 201);

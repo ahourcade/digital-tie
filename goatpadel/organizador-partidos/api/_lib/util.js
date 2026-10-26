@@ -96,6 +96,6 @@ export function cleanPhone(v) {
 
 /** Lo que se publica del partido (sin claves). */
 export function publicMatch(m) {
-  const { adminHash, ...rest } = m;
+  const { adminHash, orgAvail, ...rest } = m;
   return rest;
 }

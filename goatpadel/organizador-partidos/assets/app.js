@@ -942,6 +942,7 @@ function renderMine() {
   const box = $('#mine');
   box.innerHTML = `
     <div class="card-head"><h2>${saved ? 'Tu disponibilidad' : '¿Cuándo podés?'}</h2>${saved ? `<span class="tag ok">Guardado</span>` : ''}</div>
+    ${saved ? `<p class="small muted" style="margin:-8px 0 14px">Estás viendo la respuesta de <b>${esc(saved.name)}</b>. <button type="button" class="link-btn small" id="vOther">¿No sos ${esc(saved.name)}? Anotar a otra persona</button></p>` : ''}
     ${!saved && m.status !== 'confirmed' ? (() => {
       const org = S.data.participants.find((p) => p.organizer);
       const f = missingPlayers();
@@ -951,11 +952,15 @@ function renderMine() {
     <div class="field"><label for="vName">Tu nombre</label><input id="vName" type="text" maxlength="40" autocomplete="off" value="${esc(saved?.name || '')}" placeholder="Ej.: Juan" /></div>
 
     ${modeToolbar('vMode')}
+    ${(() => {
+      const org = S.data.participants.find((p) => p.organizer);
+      return org && !saved?.organizer
+        ? `<p class="hint" style="margin:0 0 8px">Podés marcar en los horarios que propuso <b>${esc(org.name)}</b> (en blanco). Lo rayado no está disponible.</p>`
+        : '';
+    })()}
     <div class="gridwrap"><div class="avgrid" id="myGrid"></div></div>
     <p class="grid-hint">${GRID_HINT}</p>
     <div class="actions" style="margin-top:10px">
-      <button type="button" class="btn btn-sm" id="vHabLoad">Usar mi semana habitual</button>
-      <button type="button" class="btn btn-sm" id="vHabSave">Guardar como habitual</button>
       <button type="button" class="link-btn" id="vClear">Limpiar todo</button>
     </div>
 
@@ -971,7 +976,9 @@ function renderMine() {
 
     <div class="sticky-save"><button class="btn btn-primary btn-block" id="vSave">${saved ? 'Actualizar mi disponibilidad' : 'Guardar mi disponibilidad'}</button></div>`;
 
-  buildGrid($('#myGrid'), m, { editable: true, draft: S.draft, getMode: () => S.mode });
+  const org = S.data.participants.find((p) => p.organizer);
+  const allowed = org && !saved?.organizer ? (d, i) => ((org.avail?.[d] || '')[i] || '0') !== '0' : null;
+  buildGrid($('#myGrid'), m, { editable: true, draft: S.draft, getMode: () => S.mode, allowed });
   bindSeg('#vSide');
 
   $('#vMode').addEventListener('click', (e) => {
@@ -985,34 +992,14 @@ function renderMine() {
     for (const d of m.days) S.draft[d] = '0'.repeat(slotsCount(m));
     paintGrid($('#myGrid'), S.draft);
   };
-  $('#vHabSave').onclick = () => {
-    const hab = LS.get('goat-org-habitual', {});
-    for (const d of m.days) {
-      const wd = dayDate(d).getUTCDay();
-      hab[wd] = hab[wd] || {};
-      [...S.draft[d]].forEach((v, i) => { hab[wd][m.from + i * m.step] = Number(v); });
-    }
-    LS.set('goat-org-habitual', hab);
-    toast('Guardamos tu semana habitual en este dispositivo');
-  };
-  $('#vHabLoad').onclick = () => {
-    const hab = LS.get('goat-org-habitual', null);
-    if (!hab) return toast('Todavía no guardaste una semana habitual', true);
-    let any = false;
-    for (const d of m.days) {
-      const wd = dayDate(d).getUTCDay();
-      if (!hab[wd]) continue;
-      S.draft[d] = [...S.draft[d]].map((v, i) => {
-        const h = hab[wd][m.from + i * m.step];
-        if (h === undefined || !inWin(m, d, i)) return v;
-        any = true;
-        return String(h);
-      }).join('');
-    }
-    paintGrid($('#myGrid'), S.draft);
-    toast(any ? 'Cargamos tu semana habitual' : 'No hay datos habituales para estos días', !any);
-  };
   $('#vSave').onclick = saveMine;
+  if ($('#vOther')) $('#vOther').onclick = () => {
+    S.me = null;
+    LS.set(`goat-org-vote-${m.id}`, null);
+    for (const d of m.days) S.draft[d] = '0'.repeat(slotsCount(m));
+    renderMine();
+    $('#mine').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 }
 
 async function saveMine() {
@@ -1055,7 +1042,7 @@ async function saveMine() {
 // ---------- grillas ----------
 // Una sola grilla para todo: días en columnas, bloques de 30 min en filas.
 // Lo que queda fuera del horario propuesto para cada día se ve gris y no se puede marcar.
-function buildGrid(el, m, { editable, draft = null, getMode = () => 2 }) {
+function buildGrid(el, m, { editable, draft = null, getMode = () => 2, allowed = null }) {
   const n = slotsCount(m);
   el.style.gridTemplateColumns = `52px repeat(${m.days.length}, minmax(${m.days.length > 4 ? 52 : 70}px, 1fr))`;
   let html = '<div class="corner"></div>';
@@ -1069,7 +1056,7 @@ function buildGrid(el, m, { editable, draft = null, getMode = () => 2 }) {
     const isHour = t % 60 === 0;
     html += `<div class="th ${isHour ? 'hour' : ''} ${i === 0 ? 'first' : ''}">${i === 0 || isHour ? hhmm(t) : ''}</div>`;
     for (const d of m.days) {
-      const off = !inWin(m, d, i);
+      const off = !inWin(m, d, i) || (allowed && !allowed(d, i));
       html += `<div class="c ${(t + m.step) % 60 === 0 ? 'hour' : ''} ${editable ? '' : 'h'} ${off ? 'off' : ''}" data-day="${d}" data-i="${i}" ${editable || off ? '' : 'tabindex="0"'}></div>`;
     }
   }
@@ -1207,7 +1194,7 @@ function bindDayHeaders(el) {
   const fillDay = (d) => {
     const n = slotsCount(m);
     const mode = String(getMode());
-    const cells = [...Array(n).keys()].filter((i) => inWin(m, d, i));
+    const cells = [...Array(n).keys()].filter((i) => !el.querySelector(`.c[data-day="${d}"][data-i="${i}"]`)?.classList.contains('off'));
     const full = cells.every((i) => draft()[d][i] === mode);
     const target = mode === '0' || full ? '0' : mode;
     draft()[d] = [...draft()[d]].map((v, i) => (cells.includes(i) ? target : v)).join('');

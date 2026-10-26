@@ -114,6 +114,7 @@ export async function POST(request) {
     updatedAt: now,
   };
 
+  match.orgAvail = avail; // horarios del organizador: los demás solo pueden marcar dentro de estos
   await putJSON(`matches/${id}/match.json`, match);
   await putJSON(`matches/${id}/votes/${pid}.json`, vote);
   await upsertPlayer(vote, id).catch(() => {});
