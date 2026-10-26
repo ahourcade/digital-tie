@@ -312,3 +312,10 @@ footer.site .foot-logo { height: 40px; }
 .subcard h3 { margin-bottom: 4px; }
 
 input::placeholder, textarea::placeholder { color: #a8a49c; opacity: 1; }
+
+/* Calendario compacto: filas de media hora más bajas para no alargar la página. */
+.avgrid .c { height: 16px; }
+.avgrid .th { font-size: 11px; line-height: 1; transform: translateY(-5px); }
+.avgrid .th.first { transform: none; }
+.avgrid .dh { padding: 6px 4px; }
+@media (max-width: 520px) { .avgrid .c { height: 18px; } }
