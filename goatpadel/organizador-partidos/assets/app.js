@@ -43,15 +43,28 @@ const levelSelect = (id, val) => `
     ${LEVELS.filter(([v]) => v !== 'nose').map(([v, l]) => `<option value="${v}" ${val === v ? 'selected' : ''}>${l}</option>`).join('')}
   </select>`;
 const aboutYouBlock = (pfx, level, side) => `
-  <div class="subcard">
-    <h3>Sobre vos <span class="muted small">(opcional)</span></h3>
-    <p class="small muted" style="margin:0 0 12px">Sirve para armar parejas parejas.</p>
-    <div class="row">
-      <div class="field"><label for="${pfx}Level">Tu categoría</label>${levelSelect(`${pfx}Level`, level)}</div>
-      <div class="field"><span class="label">¿De qué lado jugás?</span>${sideSeg(`${pfx}Side`, side || '')}</div>
-    </div>
-    <p class="hint" style="margin:-6px 0 0">¿No sabés tu categoría? <a href="${esc(CFG.testUrl)}" target="_blank" rel="noopener">Hacé el test de nivel de GOAT PADEL</a>.</p>
+  <h3 class="opt-title">Sobre vos</h3>
+  <p class="small muted" style="margin:0 0 12px">Sirve para armar parejas parejas.</p>
+  <div class="row">
+    <div class="field"><label for="${pfx}Level">Tu categoría</label>${levelSelect(`${pfx}Level`, level)}</div>
+    <div class="field"><span class="label">¿De qué lado jugás?</span>${sideSeg(`${pfx}Side`, side || '')}</div>
+  </div>
+  <p class="hint" style="margin:-6px 0 0">¿No sabés tu categoría? <a href="${esc(CFG.testUrl)}" target="_blank" rel="noopener">Hacé el test de nivel de GOAT PADEL</a>.</p>`;
+const consentBlock = (pfx, on, profile) => `
+  <h3 class="opt-title">Novedades de GOAT PADEL</h3>
+  <div class="field">
+    <label class="check"><input type="checkbox" id="${pfx}Consent" ${on ? 'checked' : ''} />
+      <span>Quiero recibir novedades, promos y tips de GOAT PADEL por mail o WhatsApp. <span class="muted">Podés darte de baja cuando quieras.</span></span></label>
+  </div>
+  <div class="row" id="${pfx}Contact" ${on ? '' : 'hidden'}>
+    <div class="field"><label for="${pfx}Email">Mail</label><input id="${pfx}Email" type="email" autocomplete="email" maxlength="120" value="${esc(profile.email || '')}" /></div>
+    <div class="field"><label for="${pfx}Phone">WhatsApp</label><input id="${pfx}Phone" type="tel" autocomplete="tel" maxlength="20" value="${esc(profile.phone || '')}" placeholder="11 1234 5678" /></div>
   </div>`;
+const optionals = (summary, inner) => `
+  <details class="optionals">
+    <summary><span>Opcionales</span><small>${summary}</small></summary>
+    <div class="opt-body">${inner}</div>
+  </details>`;
 const sideLabel = { drive: 'Drive', reves: 'Revés', ambos: 'Ambos' };
 const playerTag = (p) => [levelShort[p.level], sideLabel[p.side]].filter(Boolean).join(' · ');
 
@@ -223,15 +236,9 @@ function renderCreatePage() {
       <form class="card" id="createForm" novalidate>
         <div class="card-head"><h2>Nuevo partido</h2></div>
 
-        <div class="row">
-          <div class="field">
-            <label for="fOrg">Tu nombre</label>
-            <input id="fOrg" type="text" maxlength="40" autocomplete="off" required placeholder="Ej.: Juan" />
-          </div>
-          <div class="field">
-            <label for="fTitle">Nombre del partido <span class="muted">(opcional)</span></label>
-            <input id="fTitle" type="text" maxlength="60" placeholder="Pádel del jueves" />
-          </div>
+        <div class="field">
+          <label for="fOrg">Tu nombre</label>
+          <input id="fOrg" type="text" maxlength="40" autocomplete="off" required placeholder="Ej.: Juan" />
         </div>
 
         <div class="field">
@@ -271,63 +278,52 @@ function renderCreatePage() {
           </div>
         </div>
 
-        <div class="field">
-          <label for="fDeadline">Responder antes de <span class="muted">(opcional)</span></label>
-          <input id="fDeadline" type="datetime-local" />
-          <span class="hint">Lo ven todos en el link, con la cuenta regresiva.</span>
-        </div>
-
-        <hr class="divider" />
-
-        <div class="field">
-          <label for="fClub">Club o cancha <span class="muted">(opcional)</span></label>
-          <input id="fClub" type="text" maxlength="60" placeholder="Ej.: Club del barrio, cancha 3" />
-        </div>
-
-        <div class="field">
-          <label for="fPlace">Zona del club, para el pronóstico</label>
-          <div class="share-box">
-            <input id="fPlace" type="text" maxlength="60" placeholder="Ej.: Pilar" value="${esc(lastPlace?.name || '')}" autocomplete="off" />
-            <button type="button" class="btn btn-sm" id="fPlaceBtn">Buscar</button>
+        ${optionals('Nombre del partido, fecha límite, club y clima, precio, tu categoría, novedades', `
+          <h3 class="opt-title">El partido</h3>
+          <div class="field">
+            <label for="fTitle">Nombre del partido</label>
+            <input id="fTitle" type="text" maxlength="60" placeholder="Pádel del jueves" />
           </div>
-          <div class="geo-results" id="fPlaceRes"></div>
-          <button type="button" class="link-btn" id="fGeoMe" style="justify-self:start">Usar mi ubicación actual</button>
-          <span class="hint" id="fPlaceSel">${lastPlace ? `Clima para: <b>${esc(lastPlace.name)}</b>` : 'Sin zona no mostramos el clima.'}</span>
-        </div>
-
-        <label class="check" style="margin-bottom:14px"><input type="checkbox" id="fCovered" /> <span>Cancha techada <span class="muted">(la lluvia no cuenta para elegir horario)</span></span></label>
-
-        <details>
-          <summary>Más opciones: precio, alias y notas</summary>
-          <div style="margin-top:12px">
-            <div class="row">
-              <div class="field">
-                <label for="fPrice">Precio de la cancha</label>
-                <input id="fPrice" type="number" inputmode="numeric" min="0" step="500" placeholder="Ej.: 40000" />
-                <span class="hint">Lo dividimos entre los jugadores.</span>
-              </div>
-              <div class="field">
-                <label for="fAlias">Alias para transferir</label>
-                <input id="fAlias" type="text" maxlength="60" placeholder="Ej.: juan.padel" />
-              </div>
+          <div class="field">
+            <label for="fDeadline">Responder antes de</label>
+            <input id="fDeadline" type="datetime-local" />
+            <span class="hint">Lo ven todos en el link, con la cuenta regresiva.</span>
+          </div>
+          <div class="field">
+            <label for="fClub">Club o cancha</label>
+            <input id="fClub" type="text" maxlength="60" placeholder="Ej.: Club del barrio, cancha 3" />
+          </div>
+          <div class="field">
+            <label for="fPlace">Zona del club, para el pronóstico</label>
+            <div class="share-box">
+              <input id="fPlace" type="text" maxlength="60" placeholder="Ej.: Pilar" value="${esc(lastPlace?.name || '')}" autocomplete="off" />
+              <button type="button" class="btn btn-sm" id="fPlaceBtn">Buscar</button>
+            </div>
+            <div class="geo-results" id="fPlaceRes"></div>
+            <button type="button" class="link-btn" id="fGeoMe" style="justify-self:start">Usar mi ubicación actual</button>
+            <span class="hint" id="fPlaceSel">${lastPlace ? `Clima para: <b>${esc(lastPlace.name)}</b>` : 'Sin zona no mostramos el clima.'}</span>
+          </div>
+          <label class="check" style="margin-bottom:14px"><input type="checkbox" id="fCovered" /> <span>Cancha techada <span class="muted">(la lluvia no cuenta para elegir horario)</span></span></label>
+          <div class="row">
+            <div class="field">
+              <label for="fPrice">Precio de la cancha</label>
+              <input id="fPrice" type="number" inputmode="numeric" min="0" step="500" placeholder="Ej.: 40000" />
+              <span class="hint">Lo dividimos entre los jugadores.</span>
             </div>
             <div class="field">
-              <label for="fNotes">Notas para el grupo</label>
-              <textarea id="fNotes" maxlength="280" placeholder="Ej.: Llevo pelotas nuevas."></textarea>
+              <label for="fAlias">Alias para transferir</label>
+              <input id="fAlias" type="text" maxlength="60" placeholder="Ej.: juan.padel" />
             </div>
           </div>
-        </details>
-
-        <div style="margin-top:16px">${aboutYouBlock('f', '', '')}</div>
-
-        <div class="field">
-          <label class="check"><input type="checkbox" id="fConsent" ${profile.consent ? 'checked' : ''} />
-            <span>Quiero recibir novedades, promos y tips de GOAT PADEL por mail o WhatsApp. <span class="muted">Podés darte de baja cuando quieras.</span></span></label>
-        </div>
-        <div class="row" id="fContact" ${profile.consent ? '' : 'hidden'}>
-          <div class="field"><label for="fEmail">Mail</label><input id="fEmail" type="email" autocomplete="email" maxlength="120" value="${esc(profile.email || '')}" /></div>
-          <div class="field"><label for="fPhone">WhatsApp</label><input id="fPhone" type="tel" autocomplete="tel" maxlength="20" value="${esc(profile.phone || '')}" placeholder="11 1234 5678" /></div>
-        </div>
+          <div class="field">
+            <label for="fNotes">Notas para el grupo</label>
+            <textarea id="fNotes" maxlength="280" placeholder="Ej.: Llevo pelotas nuevas."></textarea>
+          </div>
+          <hr class="divider" />
+          ${aboutYouBlock('f', '', '')}
+          <hr class="divider" />
+          ${consentBlock('f', profile.consent, profile)}
+        `)}
 
         <div style="margin-top:18px"><button class="btn btn-primary btn-block" type="submit" id="fSubmit">Crear partido y obtener link</button></div>
       </form>
@@ -904,22 +900,14 @@ function renderMine() {
       <button type="button" class="link-btn" id="vClear">Limpiar todo</button>
     </div>
 
-    <hr class="divider" />
-    <details ${saved?.comment ? 'open' : ''}>
-      <summary>Agregar un comentario</summary>
-      <div class="field" style="margin-top:10px"><textarea id="vComment" maxlength="140" placeholder="Ej.: puedo llegar 15 min tarde">${esc(saved?.comment || '')}</textarea></div>
-    </details>
-
-    <div style="margin-top:14px">${aboutYouBlock('v', saved?.level, saved?.side)}</div>
-
-    <div class="field">
-      <label class="check"><input type="checkbox" id="vConsent" ${(saved ? saved.consent : profile.consent) ? 'checked' : ''} />
-        <span>Quiero recibir novedades, promos y tips de GOAT PADEL por mail o WhatsApp. <span class="muted">Podés darte de baja cuando quieras.</span></span></label>
-    </div>
-    <div class="row" id="vContact" ${(saved ? saved.consent : profile.consent) ? '' : 'hidden'}>
-      <div class="field"><label for="vEmail">Mail</label><input id="vEmail" type="email" autocomplete="email" maxlength="120" value="${esc(profile.email || '')}" /></div>
-      <div class="field"><label for="vPhone">WhatsApp</label><input id="vPhone" type="tel" autocomplete="tel" maxlength="20" value="${esc(profile.phone || '')}" placeholder="11 1234 5678" /></div>
-    </div>
+    ${optionals('Comentario, tu categoría, novedades', `
+      <h3 class="opt-title">Comentario</h3>
+      <div class="field"><textarea id="vComment" maxlength="140" placeholder="Ej.: puedo llegar 15 min tarde">${esc(saved?.comment || '')}</textarea></div>
+      <hr class="divider" />
+      ${aboutYouBlock('v', saved?.level, saved?.side)}
+      <hr class="divider" />
+      ${consentBlock('v', saved ? saved.consent : profile.consent, profile)}
+    `)}
     <p class="hint">Usamos tus datos para organizar este partido. <a href="privacidad.html" target="_blank">Privacidad</a>.</p>
 
     <div class="sticky-save"><button class="btn btn-primary btn-block" id="vSave">${saved ? 'Actualizar mi disponibilidad' : 'Guardar mi disponibilidad'}</button></div>`;
