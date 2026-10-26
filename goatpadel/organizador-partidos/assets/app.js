@@ -35,6 +35,23 @@ const LEVELS = [
 ];
 const levelShort = { 9: '9ª', 8: '8ª', 7: '7ª', 6: '6ª', 5: '5ª', 4: '4ª', '3+': '3ª+', nose: '' };
 const SIDES = [['drive', 'Drive'], ['reves', 'Revés'], ['ambos', 'Ambos']];
+
+/** Categoría y lado de juego: opcionales, al final de los formularios. */
+const levelSelect = (id, val) => `
+  <select id="${id}">
+    <option value="" ${!val || val === 'nose' ? 'selected' : ''}>Sin especificar</option>
+    ${LEVELS.filter(([v]) => v !== 'nose').map(([v, l]) => `<option value="${v}" ${val === v ? 'selected' : ''}>${l}</option>`).join('')}
+  </select>`;
+const aboutYouBlock = (pfx, level, side) => `
+  <div class="subcard">
+    <h3>Sobre vos <span class="muted small">(opcional)</span></h3>
+    <p class="small muted" style="margin:0 0 12px">Sirve para armar parejas parejas.</p>
+    <div class="row">
+      <div class="field"><label for="${pfx}Level">Tu categoría</label>${levelSelect(`${pfx}Level`, level)}</div>
+      <div class="field"><span class="label">¿De qué lado jugás?</span>${sideSeg(`${pfx}Side`, side || '')}</div>
+    </div>
+    <p class="hint" style="margin:-6px 0 0">¿No sabés tu categoría? <a href="${esc(CFG.testUrl)}" target="_blank" rel="noopener">Hacé el test de nivel de GOAT PADEL</a>.</p>
+  </div>`;
 const sideLabel = { drive: 'Drive', reves: 'Revés', ambos: 'Ambos' };
 const playerTag = (p) => [levelShort[p.level], sideLabel[p.side]].filter(Boolean).join(' · ');
 
@@ -190,9 +207,7 @@ function renderCreatePage() {
   document.title = 'Organizador de partidos · GOAT PADEL';
   const today = todayAR();
   const nextDays = Array.from({ length: 14 }, (_, i) => addDays(today, i));
-  const TIMES = [];
-  for (let m = 6 * 60; m <= 24 * 60; m += 30) TIMES.push(m);
-  const profile = LS.get('goat-org-profile', {});
+    const profile = LS.get('goat-org-profile', {});
   const lastPlace = LS.get('goat-org-place', null);
   const mine = LS.get('goat-org-matches', []);
 
@@ -231,15 +246,11 @@ function renderCreatePage() {
         </div>
 
         <div class="field">
-          <span class="label">¿En qué horario podés cada día?</span>
-          <div class="chips" id="fPresets">
-            <button type="button" class="chip" data-from="480" data-to="780">Mañana</button>
-            <button type="button" class="chip" data-from="780" data-to="1080">Tarde</button>
-            <button type="button" class="chip" data-from="1080" data-to="1440">Noche</button>
-            <button type="button" class="chip" data-from="480" data-to="1440">Todo el día</button>
-          </div>
-          <span class="hint">Los atajos aplican a todos los días; después ajustás cada uno.</span>
-          <div class="win-list" id="fWins"></div>
+          <span class="label">¿Cuándo podés jugar?</span>
+          <p class="hint" style="margin:0 0 8px">Marcá en el calendario. Quedás anotado como primer jugador y los demás solo pueden sumarse dentro de los horarios que marques.</p>
+          ${modeToolbar('fMode')}
+          <div class="gridwrap"><div class="avgrid" id="orgGrid"></div></div>
+          <p class="grid-hint">${GRID_HINT}</p>
         </div>
 
         <div class="row">
@@ -254,25 +265,10 @@ function renderCreatePage() {
           <div class="field">
             <span class="label">Jugadores</span>
             <div class="seg" id="fNeed" role="group" aria-label="Cantidad de jugadores">
-              <button type="button" data-v="4" aria-pressed="true">4 · dobles</button>
+              <button type="button" data-v="4" aria-pressed="true">4</button>
               <button type="button" data-v="2" aria-pressed="false">2</button>
             </div>
           </div>
-        </div>
-
-        <div class="subcard">
-          <h3>Vos ya estás anotado</h3>
-          <p class="small muted" style="margin:0 0 14px">Marcá en qué horarios jugás seguro y cuáles solo si no queda otra. Los demás se suman sobre estos horarios.</p>
-          <div class="row">
-            <div class="field"><label for="fLevel">Tu categoría</label>
-              <select id="fLevel">${LEVELS.map(([v, l]) => `<option value="${v}" ${(profile.level || 'nose') === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
-            </div>
-            <div class="field"><span class="label">¿De qué lado jugás?</span>${sideSeg('fSide', profile.side || '')}</div>
-          </div>
-          <p class="hint" style="margin:-6px 0 14px">¿No sabés tu categoría? <a href="${esc(CFG.testUrl)}" target="_blank" rel="noopener">Hacé el test de nivel de GOAT PADEL</a>.</p>
-          ${modeToolbar('fMode')}
-          <div class="gridwrap"><div class="avgrid" id="orgGrid"></div></div>
-          <p class="grid-hint">${GRID_HINT}</p>
         </div>
 
         <div class="field">
@@ -322,7 +318,9 @@ function renderCreatePage() {
           </div>
         </details>
 
-        <div class="field" style="margin-top:16px">
+        <div style="margin-top:16px">${aboutYouBlock('f', '', '')}</div>
+
+        <div class="field">
           <label class="check"><input type="checkbox" id="fConsent" ${profile.consent ? 'checked' : ''} />
             <span>Quiero recibir novedades, promos y tips de GOAT PADEL por mail o WhatsApp. <span class="muted">Podés darte de baja cuando quieras.</span></span></label>
         </div>
@@ -338,7 +336,7 @@ function renderCreatePage() {
         <div class="card">
           <h3 style="margin-bottom:14px">Cómo funciona</h3>
           <ol class="steps">
-            <li><div><b>Proponés</b> los días y el horario en que podés cada uno. Quedás anotado como primer jugador.</div></li>
+            <li><div><b>Elegís los días</b> y marcás en el calendario cuándo podés. Quedás anotado como primer jugador.</div></li>
             <li><div><b>Compartís el link</b> por WhatsApp. No hace falta cuenta: cada uno pone su nombre y marca cuándo puede dentro de esos horarios.</div></li>
             <li><div><b>El sistema elige</b> los horarios donde coinciden los 4, con suplentes, parejas sugeridas y el clima. Confirmás con un toque.</div></li>
           </ol>
@@ -357,95 +355,33 @@ function renderCreatePage() {
   // --- estado del formulario ---
   const form = $('#createForm');
   let place = lastPlace;
-  let lastWin = { from: 17 * 60, to: 23 * 60 + 30 };
-  const wins = {};       // día -> { from, to }
-  const orgDraft = {};   // día -> disponibilidad del organizador ("0/1/2" por bloque)
+  const GRID = { from: 8 * 60, to: 24 * 60 };   // rango del calendario del organizador
+  const orgDraft = {};   // día -> disponibilidad del organizador ("0/1/2" por bloque de 30 min)
+  const marks = {};      // día -> cadena guardada, para no perder lo marcado al cambiar días
   let orgMode = 2;
 
   const selectedDays = () => $$('#fDays [aria-pressed=true]').map((b) => b.dataset.day);
   const duration = () => Number(segValue('#fDur')) || 90;
+  const gridMatch = (days) => ({ days, windows: {}, from: GRID.from, to: GRID.to, step: 30 });
 
-  // Partido "provisorio" con los datos cargados, para dibujar la grilla del organizador.
-  function draftMatch() {
-    const days = selectedDays();
-    const from = Math.min(...days.map((d) => wins[d].from));
-    const to = Math.max(...days.map((d) => wins[d].to));
-    return { days, windows: wins, from, to, step: 30 };
-  }
-
-  function renderWindows() {
-    const days = selectedDays();
-    for (const d of days) if (!wins[d]) wins[d] = { ...lastWin };
-    const opt = (m, sel) => `<option value="${m}" ${m === sel ? 'selected' : ''}>${hm(m)}</option>`;
-    $('#fWins').innerHTML = days.map((d) => {
-      const l = dayLabel(d, 'short');
-      return `<div class="win-row" data-day="${d}">
-        <b>${esc(l.wd)}<small>${esc(l.dm)}</small></b>
-        <select data-k="from" aria-label="Desde, ${esc(l.wd)} ${esc(l.dm)}">${TIMES.slice(0, -1).map((m) => opt(m, wins[d].from)).join('')}</select>
-        <select data-k="to" aria-label="Hasta, ${esc(l.wd)} ${esc(l.dm)}">${TIMES.slice(1).map((m) => opt(m, wins[d].to)).join('')}</select>
-      </div>`;
-    }).join('') || '<p class="hint">Elegí al menos un día.</p>';
-    renderOrgGrid();
-  }
-
-  // Lo marcado por el organizador se guarda por día y minuto, así no se pierde
-  // al cambiar días u horarios (ni al quedar sin días seleccionados).
-  const marks = {};      // día -> { minuto: "0" | "1" | "2" }
-  let curM = null;       // partido provisorio dibujado en la grilla
-  function saveMarks() {
-    if (!curM) return;
-    for (const d of curM.days) {
-      if (typeof orgDraft[d] !== 'string') continue;
-      marks[d] = marks[d] || {};
-      [...orgDraft[d]].forEach((v, i) => { if (inWin(curM, d, i)) marks[d][curM.from + i * curM.step] = v; });
-    }
-  }
-
-  // Rehace la grilla. Lo nuevo dentro del horario arranca como "Puedo".
   function renderOrgGrid() {
-    const days = selectedDays();
+    for (const d of Object.keys(orgDraft)) marks[d] = orgDraft[d];
     for (const k of Object.keys(orgDraft)) delete orgDraft[k];
-    if (!days.length) { curM = null; $('#orgGrid').innerHTML = ''; return; }
-    const m = draftMatch();
+    const days = selectedDays();
+    if (!days.length) { $('#orgGrid').innerHTML = '<p class="hint" style="padding:12px">Elegí al menos un día.</p>'; return; }
+    const m = gridMatch(days);
     const n = slotsCount(m);
-    for (const d of days) {
-      let s = '';
-      for (let i = 0; i < n; i++) s += inWin(m, d, i) ? (marks[d]?.[m.from + i * m.step] ?? '2') : '0';
-      orgDraft[d] = s;
-    }
-    curM = m;
+    for (const d of days) orgDraft[d] = marks[d] || '0'.repeat(n);
     buildGrid($('#orgGrid'), m, { editable: true, draft: orgDraft, getMode: () => orgMode });
   }
-  const rebuild = (fn) => {
-    saveMarks();
-    fn();
-    renderWindows();
-  };
 
   $('#fDays').addEventListener('click', (e) => {
     const b = e.target.closest('.chip');
     if (!b) return;
     const on = b.getAttribute('aria-pressed') !== 'true';
     if (on && selectedDays().length >= 7) return toast('Hasta 7 días por partido', true);
-    rebuild(() => b.setAttribute('aria-pressed', String(on)));
-  });
-  $('#fWins').addEventListener('change', (e) => {
-    const sel = e.target.closest('select');
-    if (!sel) return;
-    const d = sel.closest('.win-row').dataset.day;
-    rebuild(() => {
-      wins[d] = { ...wins[d], [sel.dataset.k]: Number(sel.value) };
-      if (wins[d].to <= wins[d].from) wins[d].to = Math.min(1440, wins[d].from + 90);
-      lastWin = { ...wins[d] };
-    });
-  });
-  $('#fPresets').addEventListener('click', (e) => {
-    const b = e.target.closest('.chip');
-    if (!b) return;
-    rebuild(() => {
-      lastWin = { from: Number(b.dataset.from), to: Number(b.dataset.to) };
-      for (const d of selectedDays()) wins[d] = { ...lastWin };
-    });
+    b.setAttribute('aria-pressed', String(on));
+    renderOrgGrid();
   });
   bindSeg('#fDur');
   bindSeg('#fNeed');
@@ -497,18 +433,36 @@ function renderCreatePage() {
     );
   });
 
-  renderWindows();
+  renderOrgGrid();
 
   // --- enviar ---
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const organizerName = $('#fOrg').value.trim();
     if (!organizerName) { $('#fOrg').focus(); return toast('Poné tu nombre', true); }
-    const days = selectedDays();
-    if (!days.length) return toast('Elegí al menos un día', true);
+    // Cada día queda abierto entre el primer y el último horario que marcaste.
+    const step = 30;
+    const wins = {};
+    for (const d of selectedDays()) {
+      const idx = [...(orgDraft[d] || '')].map((v, i) => (v !== '0' ? i : -1)).filter((i) => i >= 0);
+      if (!idx.length) continue;
+      wins[d] = { from: GRID.from + idx[0] * step, to: GRID.from + (idx[idx.length - 1] + 1) * step };
+    }
+    const days = Object.keys(wins).sort();
+    if (!days.length) return toast('Marcá en el calendario cuándo podés jugar', true);
     const short = days.find((d) => wins[d].to - wins[d].from < duration());
-    if (short) return toast(`El horario del ${dayLabel(short, 'short').wd} ${dayLabel(short, 'short').dm} es más corto que el partido`, true);
-    if (!days.some((d) => /[12]/.test(orgDraft[d]))) return toast('Marcá al menos un horario en el que podés', true);
+    if (short) {
+      const l = dayLabel(short, 'short');
+      return toast(`El ${l.wd} ${l.dm} marcaste menos de ${duration()} minutos`, true);
+    }
+    // La disponibilidad se manda sobre el rango total del partido (desde el horario más temprano).
+    const F = Math.min(...days.map((d) => wins[d].from));
+    const T = Math.max(...days.map((d) => wins[d].to));
+    const avail = Object.fromEntries(days.map((d) => {
+      let str = '';
+      for (let t = F; t < T; t += step) str += orgDraft[d][(t - GRID.from) / step] || '0';
+      return [d, str];
+    }));
     const consent = $('#fConsent').checked;
     const email = consent ? $('#fEmail').value.trim() : '';
     const phone = consent ? $('#fPhone').value.trim() : '';
@@ -529,7 +483,7 @@ function renderCreatePage() {
       alias: $('#fAlias').value.trim(),
       deadline: dl ? new Date(dl).toISOString() : null,
       notes: $('#fNotes').value.trim(),
-      organizer: { level: $('#fLevel').value, side: segValue('#fSide'), avail: { ...orgDraft }, email, phone, consent },
+      organizer: { level: $('#fLevel').value, side: segValue('#fSide'), avail, email, phone, consent },
     };
     const btn = $('#fSubmit');
     btn.disabled = true;
@@ -541,7 +495,7 @@ function renderCreatePage() {
       list.unshift({ id: r.id, k: r.adminKey, title, createdAt: new Date().toISOString() });
       LS.set('goat-org-matches', list.slice(0, 30));
       LS.set(`goat-org-vote-${r.id}`, { pid: r.pid, key: r.key });
-      LS.set('goat-org-profile', { ...LS.get('goat-org-profile', {}), name: organizerName, level: body.organizer.level, side: body.organizer.side, email, phone, consent });
+      LS.set('goat-org-profile', { ...LS.get('goat-org-profile', {}), email, phone, consent });
       renderCreated(r.id, r.adminKey, title);
     } catch (err) {
       toast(err.message, true);
@@ -939,18 +893,7 @@ function renderMine() {
   box.innerHTML = `
     <div class="card-head"><h2>${saved ? 'Tu disponibilidad' : '¿Cuándo podés?'}</h2>${saved ? `<span class="tag ok">Guardado</span>` : ''}</div>
 
-    <div class="row">
-      <div class="field"><label for="vName">Tu nombre</label><input id="vName" type="text" maxlength="40" autocomplete="off" value="${esc(saved?.name || '')}" placeholder="Ej.: Juan" /></div>
-      <div class="field"><label for="vLevel">Tu categoría</label>
-        <select id="vLevel">${LEVELS.map(([v, l]) => `<option value="${v}" ${(saved?.level || profile.level || 'nose') === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
-      </div>
-    </div>
-    <p class="hint" style="margin:-6px 0 14px">¿No sabés tu categoría? <a href="${esc(CFG.testUrl)}" target="_blank" rel="noopener">Hacé el test de nivel de GOAT PADEL</a>.</p>
-
-    <div class="field">
-      <span class="label">¿De qué lado jugás?</span>
-      ${sideSeg('vSide', saved?.side || profile.side || '')}
-    </div>
+    <div class="field"><label for="vName">Tu nombre</label><input id="vName" type="text" maxlength="40" autocomplete="off" value="${esc(saved?.name || '')}" placeholder="Ej.: Juan" /></div>
 
     ${modeToolbar('vMode')}
     <div class="gridwrap"><div class="avgrid" id="myGrid"></div></div>
@@ -967,7 +910,9 @@ function renderMine() {
       <div class="field" style="margin-top:10px"><textarea id="vComment" maxlength="140" placeholder="Ej.: puedo llegar 15 min tarde">${esc(saved?.comment || '')}</textarea></div>
     </details>
 
-    <div class="field" style="margin-top:14px">
+    <div style="margin-top:14px">${aboutYouBlock('v', saved?.level, saved?.side)}</div>
+
+    <div class="field">
       <label class="check"><input type="checkbox" id="vConsent" ${(saved ? saved.consent : profile.consent) ? 'checked' : ''} />
         <span>Quiero recibir novedades, promos y tips de GOAT PADEL por mail o WhatsApp. <span class="muted">Podés darte de baja cuando quieras.</span></span></label>
     </div>
@@ -1047,7 +992,7 @@ async function saveMine() {
       S.me = { pid: r.pid, key: r.key };
       LS.set(`goat-org-vote-${m.id}`, S.me);
     }
-    LS.set('goat-org-profile', { name, level: body.level, side: body.side, email, phone, consent });
+    LS.set('goat-org-profile', { ...LS.get('goat-org-profile', {}), email, phone, consent });
     toast('¡Listo! Guardamos tu disponibilidad');
     await refresh();
     S.stamp = '';
@@ -1070,7 +1015,7 @@ function buildGrid(el, m, { editable, draft = null, getMode = () => 2 }) {
   for (const d of m.days) {
     const l = dayLabel(d, 'short');
     const w = dayWin(m, d);
-    html += `<div class="dh" data-day="${d}" ${editable ? 'role="button" tabindex="0" title="Marcar todo el día"' : ''}>${esc(l.wd)}<small>${esc(l.dm)}</small><small>${hm(w.from)}–${hm(w.to)}</small></div>`;
+    html += `<div class="dh" data-day="${d}" ${editable ? 'role="button" tabindex="0" title="Marcar todo el día"' : ''}>${esc(l.wd)}<small>${esc(l.dm)}</small>${m.windows?.[d] ? `<small>${hm(w.from)}–${hm(w.to)}</small>` : ''}</div>`;
   }
   for (let i = 0; i < n; i++) {
     const t = m.from + i * m.step;
@@ -1083,8 +1028,12 @@ function buildGrid(el, m, { editable, draft = null, getMode = () => 2 }) {
   }
   el.innerHTML = html;
   if (editable) {
+    // La grilla puede redibujarse muchas veces: los eventos se enganchan una sola vez
+    // y siempre leen el partido y la disponibilidad vigentes.
+    el._grid = { m, draft, getMode };
     paintGrid(el, draft);
-    bindPainting(el, m, draft, getMode);
+    if (!el._bound) { el._bound = true; bindPainting(el); }
+    bindDayHeaders(el);
   }
 }
 
@@ -1106,12 +1055,13 @@ function setCell(draft, c, v) {
   c.className = c.className.replace(/\s?v[012]/g, '') + ` v${v}`;
 }
 
-function bindPainting(el, m, draft, getMode) {
+function bindPainting(el) {
+  const cur = () => el._grid;
   let paintVal = null;
   const valueFor = (c) => {
-    const mode = getMode();
-    const cur = Number(draft[c.dataset.day][Number(c.dataset.i)]);
-    return mode === 0 ? 0 : cur === mode ? 0 : mode;
+    const mode = cur().getMode();
+    const now = Number(cur().draft[c.dataset.day][Number(c.dataset.i)]);
+    return mode === 0 ? 0 : now === mode ? 0 : mode;
   };
   const cellAt = (x, y) => {
     const c = document.elementFromPoint(x, y)?.closest?.('.c');
@@ -1124,12 +1074,12 @@ function bindPainting(el, m, draft, getMode) {
     if (!c || c.classList.contains('off')) return;
     e.preventDefault();
     paintVal = valueFor(c);
-    setCell(draft, c, paintVal);
+    setCell(cur().draft, c, paintVal);
   });
   el.addEventListener('mouseover', (e) => {
     if (paintVal === null) return;
     const c = e.target.closest('.c');
-    if (c) setCell(draft, c, paintVal);
+    if (c) setCell(cur().draft, c, paintVal);
   });
   window.addEventListener('mouseup', () => { paintVal = null; });
 
@@ -1149,7 +1099,7 @@ function bindPainting(el, m, draft, getMode) {
       painting = true;
       el.classList.add('painting');
       paintVal = valueFor(c);
-      setCell(draft, c, paintVal);
+      setCell(cur().draft, c, paintVal);
       navigator.vibrate?.(12);
     }, 280);
   }, { passive: true });
@@ -1158,7 +1108,7 @@ function bindPainting(el, m, draft, getMode) {
     if (painting) {
       e.preventDefault();
       const c = cellAt(t.clientX, t.clientY);
-      if (c) setCell(draft, c, paintVal);
+      if (c) setCell(cur().draft, c, paintVal);
     } else if (startXY && Math.hypot(t.clientX - startXY[0], t.clientY - startXY[1]) > 8) {
       clearTimeout(timer);
       startCell = null;
@@ -1168,7 +1118,7 @@ function bindPainting(el, m, draft, getMode) {
     clearTimeout(timer);
     if (!painting && startCell) {
       e.preventDefault();
-      setCell(draft, startCell, valueFor(startCell));
+      setCell(cur().draft, startCell, valueFor(startCell));
     }
     painting = false;
     paintVal = null;
@@ -1181,16 +1131,21 @@ function bindPainting(el, m, draft, getMode) {
     paintVal = null;
     el.classList.remove('painting');
   });
+}
 
+function bindDayHeaders(el) {
+  const { m } = el._grid;
+  const draft = () => el._grid.draft;
+  const getMode = () => el._grid.getMode();
   // Tocar el encabezado del día marca o limpia todo su horario propuesto.
   const fillDay = (d) => {
     const n = slotsCount(m);
     const mode = String(getMode());
     const cells = [...Array(n).keys()].filter((i) => inWin(m, d, i));
-    const full = cells.every((i) => draft[d][i] === mode);
+    const full = cells.every((i) => draft()[d][i] === mode);
     const target = mode === '0' || full ? '0' : mode;
-    draft[d] = [...draft[d]].map((v, i) => (cells.includes(i) ? target : v)).join('');
-    paintGrid(el, draft);
+    draft()[d] = [...draft()[d]].map((v, i) => (cells.includes(i) ? target : v)).join('');
+    paintGrid(el, draft());
   };
   $$('.dh', el).forEach((h) => {
     h.addEventListener('click', () => fillDay(h.dataset.day));
