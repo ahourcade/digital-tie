@@ -492,7 +492,7 @@ function renderCreatePage() {
       LS.set('goat-org-matches', list.slice(0, 30));
       LS.set(`goat-org-vote-${r.id}`, { pid: r.pid, key: r.key });
       LS.set('goat-org-profile', { ...LS.get('goat-org-profile', {}), email, phone, consent });
-      renderCreated(r.id, r.adminKey, title);
+      renderCreated(r.id, r.adminKey, title, body.need);
     } catch (err) {
       toast(err.message, true);
       btn.disabled = false;
@@ -501,9 +501,9 @@ function renderCreatePage() {
   });
 }
 
-function renderCreated(id, k, title) {
+function renderCreated(id, k, title, need = 4) {
   const link = shareUrl(id);
-  const msg = `🎾 ${title}\nMarcá cuándo podés jugar y el sistema encuentra el horario para todos:\n${link}`;
+  const msg = `🎾 ${title}\nYa estoy anotado, ${faltanText(need - 1).toLowerCase()}. Marcá cuándo podés y el sistema encuentra el horario:\n${link}`;
   app.innerHTML = `
     <div class="hero-band"><div class="wrap">
       <img class="hero-iso" src="assets/isotipo-bone.svg" alt="" aria-hidden="true" />
@@ -629,7 +629,11 @@ function renderHead() {
     <p class="eyebrow">Organiza ${esc(m.organizerName)}</p>
     <h1>${esc(m.title)}</h1>
     <div class="meta">
-      ${m.status === 'confirmed' ? '<span class="tag ok">Confirmado</span>' : `<span class="tag bordo">${count} ${count === 1 ? 'respuesta' : 'respuestas'} · faltan horarios para ${m.need}</span>`}
+      ${m.status === 'confirmed' ? '<span class="tag ok">Confirmado</span>' : (() => {
+        const f = missingPlayers();
+        return f ? `<span class="tag bordo">${faltanText(f)}</span>` : '<span class="tag ok">Hay horario para jugar</span>';
+      })()}
+      <span class="tag">Anotados: ${S.data.participants.map((p) => esc(p.name)).join(', ') || 'nadie todavía'}</span>
       <span class="tag">${m.days.map((d) => esc(`${dayLabel(d, 'short').wd} ${dayLabel(d, 'short').dm}${sameWin ? '' : ` ${hm(dayWin(m, d).from)}–${hm(dayWin(m, d).to)}`}`)).join(' · ')}</span>
       <span class="tag">${sameWin ? `${range} · ` : ''}${m.duration}'</span>
       ${m.club ? `<span class="tag">${esc(m.club)}</span>` : ''}
@@ -641,17 +645,11 @@ function renderHead() {
       <div class="notice" style="margin-top:14px">Estás en el <b>panel de organizador</b>. Para invitar, compartí el link del grupo:
         <div class="actions" style="margin-top:10px">
           <button class="btn btn-sm btn-navy" id="hCopy">Copiar link del grupo</button>
-          <a class="btn btn-sm btn-wa" target="_blank" rel="noopener" href="${esc(waLink(`🎾 ${m.title}\nMarcá cuándo podés jugar y el sistema encuentra el horario para todos:\n${shareUrl(m.id)}`))}">WhatsApp</a>
+          <a class="btn btn-sm btn-wa" target="_blank" rel="noopener" href="${esc(waLink(`🎾 ${m.title}\n${missingPlayers() ? `${faltanText(missingPlayers())}. ` : ''}Marcá cuándo podés y el sistema encuentra el horario:\n${shareUrl(m.id)}`))}">WhatsApp</a>
         </div>
       </div>` : `
       <div class="actions" style="margin-top:14px"><button class="btn btn-sm" id="hCopy">Copiar link</button></div>`}`;
   $('#hCopy').onclick = () => copy(shareUrl(m.id));
-  const counter = $('.tag.bordo');
-  if (counter && m.status !== 'confirmed') {
-    const best = analyze(m, S.data.participants).best;
-    counter.textContent = `${count} ${count === 1 ? 'respuesta' : 'respuestas'}${best.length ? ' · hay horario' : ` · necesitan ${m.need}`}`;
-    if (best.length) counter.className = 'tag ok';
-  }
 }
 
 // ---------- resultados ----------
@@ -692,6 +690,13 @@ function timeText(g, duration) {
   return `Arrancan entre ${hhmm(g.firstStart)} y ${hhmm(g.lastStart)}`;
 }
 
+/** Cuántos jugadores faltan en el mejor horario posible (0 = ya hay horario). */
+function missingPlayers(A = analyze(S.data.match, S.data.participants)) {
+  if (A.best.length) return 0;
+  return A.near[0]?.missing ?? S.data.match.need;
+}
+const faltanText = (n) => `Falta${n === 1 ? '' : 'n'} ${n} jugador${n === 1 ? '' : 'es'}`;
+
 function currentAnalysis() {
   const m = S.data.match;
   const opts = {};
@@ -723,13 +728,15 @@ function renderResults() {
   }
   // Sin cupo completo: mostramos los "casi".
   box.innerHTML = `
-    <h2>Todavía no hay horario para ${m.need}</h2>
-    <p class="small muted" style="margin:6px 0 14px">${S.data.participants.length} de ${m.need} respondieron${S.data.participants.length >= m.need ? ', pero no coinciden' : ''}. Estos son los horarios más cerca:</p>
+    <h2>${faltanText(missingPlayers(A))}</h2>
+    <p class="small muted" style="margin:6px 0 14px">${S.data.participants.length >= m.need
+      ? `Ya se anotaron ${S.data.participants.length}, pero todavía no coinciden ${m.need} en el mismo horario.`
+      : `Ya ${S.data.participants.length === 1 ? 'está anotado' : 'están anotados'} ${esc(S.data.participants.map((p) => p.name).join(', '))}. Estos son los horarios propuestos:`}</p>
     ${A.near.length ? A.near.map((g) => `
       <div class="slot">
         <div class="slot-day">${esc(dayLabel(g.day, 'long'))}</div>
         <div class="slot-time">${esc(timeText(g, m.duration))}</div>
-        <p class="small" style="margin:4px 0 0"><b>Falta${g.missing === 1 ? '' : 'n'} ${g.missing}</b> para completar.</p>
+        <p class="small" style="margin:4px 0 0"><b>${faltanText(g.missing)}</b> en este horario.</p>
         ${lineupHtml(g)}
         ${g.hints.length ? `<ul class="small" style="margin:10px 0 0;padding-left:18px">${g.hints.map((h) => `<li><b>${esc(h.name)}</b> ${esc(h.text)}</li>`).join('')}</ul>` : ''}
       </div>`).join('') : '<p class="empty">Nadie marcó horarios todavía.</p>'}`;
@@ -888,6 +895,11 @@ function renderMine() {
   const box = $('#mine');
   box.innerHTML = `
     <div class="card-head"><h2>${saved ? 'Tu disponibilidad' : '¿Cuándo podés?'}</h2>${saved ? `<span class="tag ok">Guardado</span>` : ''}</div>
+    ${!saved && m.status !== 'confirmed' ? (() => {
+      const org = S.data.participants.find((p) => p.organizer);
+      const f = missingPlayers();
+      return `<div class="notice" style="margin-bottom:16px">${org ? `<b>${esc(org.name)}</b> ya está confirmado en los horarios del calendario. ` : ''}${f ? `<b>${faltanText(f)}</b>: marcá cuándo podés vos.` : 'Ya hay horario: marcá cuándo podés por si queda lugar o como suplente.'}</div>`;
+    })() : ''}
 
     <div class="field"><label for="vName">Tu nombre</label><input id="vName" type="text" maxlength="40" autocomplete="off" value="${esc(saved?.name || '')}" placeholder="Ej.: Juan" /></div>
 
@@ -1194,7 +1206,7 @@ function renderPeople() {
   const ps = S.data.participants;
   const box = $('#people');
   box.innerHTML = `
-    <div class="card-head"><h2>Respondieron (${ps.length})</h2></div>
+    <div class="card-head"><h2>Anotados (${ps.length} de ${m.need})</h2></div>
     ${ps.length ? `<ul class="plist">${ps.map((p) => `
       <li>
         <span class="av">${esc(initials(p.name))}</span>
@@ -1205,7 +1217,7 @@ function renderPeople() {
         </div>
         ${S.data.admin ? `<button class="link-btn small" data-remove="${esc(p.pid)}">Quitar</button>` : ''}
       </li>`).join('')}</ul>` : `<p class="empty">Nadie todavía. ¡Compartí el link!</p>`}
-    ${ps.length && ps.length < m.need ? `<p class="small muted">Faltan ${m.need - ps.length} para llegar a ${m.need}.</p>` : ''}`;
+    ${ps.length && ps.length < m.need ? `<p class="small muted">${faltanText(m.need - ps.length)}.</p>` : ''}`;
   $$('[data-remove]', box).forEach((b) => {
     b.onclick = async () => {
       const p = ps.find((x) => x.pid === b.dataset.remove);
