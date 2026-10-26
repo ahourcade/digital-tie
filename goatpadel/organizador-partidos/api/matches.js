@@ -53,6 +53,8 @@ export async function POST(request) {
     };
   }
 
+  if (!place) return fail('Poné dónde se juega para mostrar el clima.');
+
   const deadline = b.deadline && !Number.isNaN(Date.parse(b.deadline)) ? new Date(b.deadline).toISOString() : null;
 
   const id = newId(8);

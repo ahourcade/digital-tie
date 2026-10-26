@@ -58,6 +58,28 @@ export async function loadWeather(place, days) {
   return p;
 }
 
+/** Tipo de cielo a partir del código WMO de Open-Meteo. */
+export function skyKind(code) {
+  if (code >= 95) return 'storm';
+  if (code >= 51) return 'rain';
+  if (code === 3 || code === 45 || code === 48) return 'cloud';
+  if (code === 1 || code === 2) return 'partly';
+  return 'clear';
+}
+export const SKY_LABEL = { clear: 'Despejado', partly: 'Parcialmente nublado', cloud: 'Nublado', rain: 'Lluvia', storm: 'Tormenta' };
+const SKY_RANK = { clear: 0, partly: 1, cloud: 2, rain: 3, storm: 4 };
+
+/** Pronóstico hora por hora para un día entre dos horarios (minutos). */
+export function hourly(wx, day, startMin, endMin) {
+  if (!wx || day > wx.coveredUntil) return null;
+  const out = [];
+  for (let h = Math.floor(startMin / 60); h < Math.ceil(endMin / 60); h++) {
+    const r = wx.hours.get(`${day}T${String(h % 24).padStart(2, '0')}`);
+    if (r) out.push({ hour: h, sky: skyKind(r.code), prob: Math.round(r.prob ?? 0), wind: Math.round(r.wind ?? 0), temp: Math.round(r.temp) });
+  }
+  return out.length ? out : null;
+}
+
 /** Resumen para una ventana del partido (minutos desde las 00:00). */
 export function summarize(wx, day, startMin, endMin) {
   if (!wx) return null;
@@ -73,7 +95,9 @@ export function summarize(wx, day, startMin, endMin) {
   const prob = max('prob');
   const mm = rows.reduce((s, r) => s + (r.mm || 0), 0);
   const rainCodes = rows.some((r) => r.code >= 51);
+  const sky = rows.map((r) => skyKind(r.code)).reduce((a, b) => (SKY_RANK[b] > SKY_RANK[a] ? b : a), 'clear');
   return {
+    sky,
     rain: prob >= 40 || mm >= 0.3 || (rainCodes && prob >= 25),
     prob: Math.round(prob),
     mm: Math.round(mm * 10) / 10,

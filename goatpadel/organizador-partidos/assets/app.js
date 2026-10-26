@@ -1,6 +1,7 @@
 // Organizador de partidos GOAT PADEL — interfaz.
 import { analyze, hhmm, slotsCount } from './matching.js';
-import { loadWeather, summarize, rainPenalty, geocode, KMH_TO_KNOTS } from './weather.js';
+import { loadWeather, summarize, rainPenalty, geocode, hourly, SKY_LABEL, KMH_TO_KNOTS } from './weather.js';
+import { skyIcon } from './icons.js';
 
 const CFG = {
   // Link al test de nivel de GOAT PADEL (a confirmar cuando esté publicado).
@@ -44,7 +45,7 @@ const levelSelect = (id, val) => `
   </select>`;
 const aboutYouBlock = (pfx, level, side) => `
   <h3 class="opt-title">Sobre vos</h3>
-  <p class="small muted" style="margin:0 0 12px">Sirve para armar parejas parejas.</p>
+  <p class="small muted" style="margin:0 0 12px">Sirve para nivelar el partido en caso de no conocer a algún jugador.</p>
   <div class="row">
     <div class="field"><label for="${pfx}Level">Tu categoría</label>${levelSelect(`${pfx}Level`, level)}</div>
     <div class="field"><span class="label">¿De qué lado jugás?</span>${sideSeg(`${pfx}Side`, side || '')}</div>
@@ -228,8 +229,8 @@ function renderCreatePage() {
     <div class="hero-band"><div class="wrap">
       <img class="hero-iso" src="assets/isotipo-bone.svg" alt="" aria-hidden="true" />
       <p class="eyebrow">Organizador de partidos</p>
-      <h1>Armá el partido.<br>Sin el ida y vuelta.</h1>
-      <p class="lead">Proponé días y horarios, mandá el link al grupo y cada uno marca cuándo puede. El sistema encuentra el horario en que juegan los 4.</p>
+      <h1>Creá un partido nuevo.</h1>
+      <p class="lead">Configurá días y horarios disponibles para luego enviarlo a tus amigos y que confirmen. El sistema encontrará automáticamente el espacio en el que todos coincidan.</p>
     </div></div>
 
     <div class="grid-2">
@@ -254,7 +255,7 @@ function renderCreatePage() {
 
         <div class="field">
           <span class="label">¿Cuándo podés jugar?</span>
-          <p class="hint" style="margin:0 0 8px">Marcá en el calendario. Quedás anotado como primer jugador y los demás solo pueden sumarse dentro de los horarios que marques.</p>
+          <p class="hint" style="margin:0 0 8px">Marcá en el calendario. Quedás anotado como primer jugador y los demás solo pueden sumarse dentro de los horarios que configures.</p>
           ${modeToolbar('fMode')}
           <div class="gridwrap"><div class="avgrid" id="orgGrid"></div></div>
           <p class="grid-hint">${GRID_HINT}</p>
@@ -278,7 +279,19 @@ function renderCreatePage() {
           </div>
         </div>
 
-        ${optionals('Nombre del partido, fecha límite, club y clima, precio, tu categoría, novedades', `
+        <div class="field">
+          <label for="fPlace">¿Dónde se juega? <span class="muted">(zona o ciudad del club)</span></label>
+          <div class="share-box">
+            <input id="fPlace" type="text" maxlength="60" placeholder="Ej.: Pilar" value="${esc(lastPlace?.name || '')}" autocomplete="off" required />
+            <button type="button" class="btn btn-sm" id="fPlaceBtn">Buscar</button>
+          </div>
+          <div class="geo-results" id="fPlaceRes"></div>
+          <button type="button" class="link-btn" id="fGeoMe" style="justify-self:start">Usar mi ubicación actual</button>
+          <span class="hint" id="fPlaceSel">${lastPlace ? `Clima para: <b>${esc(lastPlace.name)}</b>` : 'La usamos para mostrar el pronóstico de cada horario.'}</span>
+        </div>
+        <label class="check" style="margin-bottom:16px"><input type="checkbox" id="fCovered" /> <span>Cancha techada <span class="muted">(la lluvia no cuenta para elegir horario)</span></span></label>
+
+        ${optionals('Nombre del partido, fecha límite, club, precio, tu categoría, novedades', `
           <h3 class="opt-title">El partido</h3>
           <div class="field">
             <label for="fTitle">Nombre del partido</label>
@@ -293,17 +306,6 @@ function renderCreatePage() {
             <label for="fClub">Club o cancha</label>
             <input id="fClub" type="text" maxlength="60" placeholder="Ej.: Club del barrio, cancha 3" />
           </div>
-          <div class="field">
-            <label for="fPlace">Zona del club, para el pronóstico</label>
-            <div class="share-box">
-              <input id="fPlace" type="text" maxlength="60" placeholder="Ej.: Pilar" value="${esc(lastPlace?.name || '')}" autocomplete="off" />
-              <button type="button" class="btn btn-sm" id="fPlaceBtn">Buscar</button>
-            </div>
-            <div class="geo-results" id="fPlaceRes"></div>
-            <button type="button" class="link-btn" id="fGeoMe" style="justify-self:start">Usar mi ubicación actual</button>
-            <span class="hint" id="fPlaceSel">${lastPlace ? `Clima para: <b>${esc(lastPlace.name)}</b>` : 'Sin zona no mostramos el clima.'}</span>
-          </div>
-          <label class="check" style="margin-bottom:14px"><input type="checkbox" id="fCovered" /> <span>Cancha techada <span class="muted">(la lluvia no cuenta para elegir horario)</span></span></label>
           <div class="row">
             <div class="field">
               <label for="fPrice">Precio de la cancha</label>
@@ -459,6 +461,19 @@ function renderCreatePage() {
       for (let t = F; t < T; t += step) str += orgDraft[d][(t - GRID.from) / step] || '0';
       return [d, str];
     }));
+    if (!place) {
+      const q = $('#fPlace').value.trim();
+      if (q.length >= 2) {
+        try {
+          const res = await geocode(q);
+          if (res.length) setPlace(res[0]);
+        } catch { /* sin conexión: se pide abajo */ }
+      }
+    }
+    if (!place) {
+      $('#fPlace').focus();
+      return toast('Poné dónde se juega para mostrar el clima', true);
+    }
     const consent = $('#fConsent').checked;
     const email = consent ? $('#fEmail').value.trim() : '';
     const phone = consent ? $('#fPhone').value.trim() : '';
@@ -578,6 +593,7 @@ async function renderMatchPage(id) {
       </div>
       <div>
         <section class="card" id="results"></section>
+        <section class="card" id="weather" hidden></section>
         <section class="card" id="people"></section>
         <section class="card" id="adminBox" hidden></section>
       </div>
@@ -612,6 +628,7 @@ async function refresh() {
 
 function renderAll() {
   renderConfirmed();
+  renderWeather();
   renderResults();
   renderGroup();
   renderPeople();
@@ -661,12 +678,42 @@ function wxBlock(day, start, end, covered) {
   const kn = (v) => Math.round(v * KMH_TO_KNOTS);
   return `
     <dl class="wx">
-      <div class="${s.rain ? 'rain-yes' : ''}"><dt>Lluvia</dt><dd>${s.rain ? 'Sí' : 'No'} <small>${s.mm ? `${s.mm} mm` : ''}</small></dd></div>
-      <div><dt>Prob. lluvia</dt><dd>${s.prob}%</dd></div>
+      <div class="${s.rain ? 'rain-yes' : ''}"><dt>Cielo</dt><dd class="wx-sky">${skyIcon(s.sky, Math.floor(start / 60))}<span>${SKY_LABEL[s.sky]}</span></dd></div>
+      <div><dt>Prob. lluvia</dt><dd>${s.prob}% <small>${s.mm ? `${s.mm} mm` : ''}</small></dd></div>
       <div><dt>Viento</dt><dd>${s.wind} km/h <small>${kn(s.wind)} kn</small></dd><dd><small>Ráfagas ${s.gust} km/h · ${kn(s.gust)} kn</small></dd></div>
       <div><dt>Temperatura</dt><dd>${s.tMin === s.tMax ? `${s.tMax}°` : `${s.tMin}° a ${s.tMax}°`}</dd></div>
     </dl>
     ${covered && s.rain ? '<p class="wx-note">Cancha techada: la lluvia no debería afectar.</p>' : ''}`;
+}
+
+/** Pronóstico hora por hora en los días y horarios disponibles del partido. */
+function renderWeather() {
+  const m = S.data.match;
+  const box = $('#weather');
+  if (!box) return;
+  if (!m.place) { box.hidden = true; return; }
+  box.hidden = false;
+  const head = `<div class="card-head"><h2>Clima</h2><span class="small muted">${esc(m.place.name)}</span></div>`;
+  if (!S.wx) { box.innerHTML = head + '<p class="wx-note">Cargando pronóstico…</p>'; return; }
+  const kn = (v) => Math.round(v * KMH_TO_KNOTS);
+  const days = m.days.map((d) => {
+    const w = dayWin(m, d);
+    const rows = hourly(S.wx, d, w.from, w.to);
+    const title = `<div class="fc-day">${esc(dayLabel(d, 'long'))}</div>`;
+    if (!rows) {
+      const s = summarize(S.wx, d, w.from, w.to);
+      return title + `<p class="wx-note">${s?.pending ? `El pronóstico aparece desde el ${esc(dayLabel(s.availableFrom, 'long'))}.` : 'Sin pronóstico para ese día.'}</p>`;
+    }
+    return title + `<div class="fc-row">${rows.map((r) => `
+      <div class="fc-h ${r.sky === 'rain' || r.sky === 'storm' ? 'wet' : ''}" title="${SKY_LABEL[r.sky]}">
+        <span class="fc-t">${String(r.hour % 24).padStart(2, '0')} h</span>
+        ${skyIcon(r.sky, r.hour, 24)}
+        <span class="fc-p">${r.prob}%</span>
+        <span class="fc-w">${r.wind} km/h</span>
+        <span class="fc-k">${kn(r.wind)} kn</span>
+      </div>`).join('')}</div>`;
+  }).join('');
+  box.innerHTML = head + days + `<p class="wx-note">Cada columna es una hora: cielo, probabilidad de lluvia y viento.${m.covered ? ' Cancha techada.' : ''}</p>`;
 }
 
 const personChip = (p, kind, note = '') =>
@@ -1067,6 +1114,23 @@ function bindPainting(el) {
     const c = document.elementFromPoint(x, y)?.closest?.('.c');
     return c && el.contains(c) && !c.classList.contains('off') ? c : null;
   };
+  // Al arrastrar rápido el puntero puede saltear filas: rellenamos todo el tramo
+  // entre la última celda pintada y la actual (si siguen en el mismo día).
+  let last = null;
+  const paintTo = (c) => {
+    if (!c || paintVal === null) return;
+    if (last && last.dataset.day === c.dataset.day) {
+      const a = Number(last.dataset.i);
+      const b = Number(c.dataset.i);
+      for (let i = Math.min(a, b); i <= Math.max(a, b); i++) {
+        const cell = el.querySelector(`.c[data-day="${c.dataset.day}"][data-i="${i}"]`);
+        if (cell) setCell(cur().draft, cell, paintVal);
+      }
+    } else {
+      setCell(cur().draft, c, paintVal);
+    }
+    last = c;
+  };
 
   // Mouse: clic y arrastre.
   el.addEventListener('mousedown', (e) => {
@@ -1074,14 +1138,15 @@ function bindPainting(el) {
     if (!c || c.classList.contains('off')) return;
     e.preventDefault();
     paintVal = valueFor(c);
-    setCell(cur().draft, c, paintVal);
+    last = null;
+    paintTo(c);
   });
   el.addEventListener('mouseover', (e) => {
     if (paintVal === null) return;
     const c = e.target.closest('.c');
-    if (c) setCell(cur().draft, c, paintVal);
+    if (c && !c.classList.contains('off')) paintTo(c);
   });
-  window.addEventListener('mouseup', () => { paintVal = null; });
+  window.addEventListener('mouseup', () => { paintVal = null; last = null; });
 
   // Táctil: tocar marca; mantener apretado y deslizar pinta varios sin mover la página.
   let timer = null;
@@ -1099,7 +1164,8 @@ function bindPainting(el) {
       painting = true;
       el.classList.add('painting');
       paintVal = valueFor(c);
-      setCell(cur().draft, c, paintVal);
+      last = null;
+      paintTo(c);
       navigator.vibrate?.(12);
     }, 280);
   }, { passive: true });
@@ -1107,8 +1173,7 @@ function bindPainting(el) {
     const t = e.touches[0];
     if (painting) {
       e.preventDefault();
-      const c = cellAt(t.clientX, t.clientY);
-      if (c) setCell(cur().draft, c, paintVal);
+      paintTo(cellAt(t.clientX, t.clientY));
     } else if (startXY && Math.hypot(t.clientX - startXY[0], t.clientY - startXY[1]) > 8) {
       clearTimeout(timer);
       startCell = null;
@@ -1122,6 +1187,7 @@ function bindPainting(el) {
     }
     painting = false;
     paintVal = null;
+    last = null;
     startCell = null;
     el.classList.remove('painting');
   });

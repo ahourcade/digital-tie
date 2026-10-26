@@ -333,3 +333,18 @@ details.optionals[open] > summary { border-bottom: 1px solid var(--line); }
 details.optionals .opt-body { padding: 16px; background: var(--paper); border-radius: 0 0 var(--radius) var(--radius); }
 .opt-title { font-size: 15px; margin: 0 0 10px; }
 @media (max-width: 520px) { .opt-body .row { grid-template-columns: 1fr; gap: 0; } }
+
+/* Clima */
+.sky { color: var(--navy); flex: none; }
+.sky-rain, .sky-storm { color: var(--bordo); }
+.confirmed .sky { color: var(--bone); }
+.wx dd.wx-sky { display: flex; align-items: center; gap: 6px; font-size: 13.5px; }
+.fc-day { font-family: var(--display); font-weight: 600; font-size: 14px; color: var(--navy); margin: 14px 0 6px; }
+.fc-day:first-of-type { margin-top: 0; }
+.fc-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+.fc-h { flex: 0 0 64px; display: grid; justify-items: center; gap: 3px; padding: 8px 4px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--paper); text-align: center; }
+.fc-h.wet { background: var(--bordo-soft); border-color: #e3c4c7; }
+.fc-t { font-size: 12px; font-weight: 600; color: var(--navy); }
+.fc-p { font-size: 13px; font-weight: 600; color: var(--navy); }
+.fc-w { font-size: 11.5px; color: var(--goat-charcoal); }
+.fc-k { font-size: 10.5px; color: var(--muted); }
