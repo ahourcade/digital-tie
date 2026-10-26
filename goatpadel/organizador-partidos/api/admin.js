@@ -1,6 +1,6 @@
 // POST /api/admin — acciones del organizador (requiere la clave del link de organizador).
 import { storageReady, STORAGE_MSG } from './_lib/store.js';
-import { getJSON, putJSON, deleteJSON } from './_lib/store.js';
+import { getJSON, putJSON, deleteJSON, listPaths } from './_lib/store.js';
 import { json, fail, readBody, clean, isId, isDay, sameHash, publicMatch } from './_lib/util.js';
 
 export async function POST(request) {
@@ -18,6 +18,14 @@ export async function POST(request) {
   if (!sameHash(b.k, match.adminHash)) return fail('Solo el organizador puede hacer esto.', 403);
 
   const now = new Date().toISOString();
+
+  if (b.action === 'delete') {
+    // Borra el partido y todas sus respuestas. Las fichas de jugadores (base de GOAT PADEL) se conservan.
+    const paths = await listPaths(`matches/${match.id}/`);
+    await Promise.all(paths.map((p) => deleteJSON(p)));
+    await deleteJSON(`matches/${match.id}/match.json`);
+    return json({ ok: true, deleted: true });
+  }
 
   switch (b.action) {
     case 'confirm': {

@@ -664,9 +664,33 @@ function renderHead() {
           <button class="btn btn-sm btn-navy" id="hCopy">Copiar link del grupo</button>
           <a class="btn btn-sm btn-wa" target="_blank" rel="noopener" href="${esc(waLink(`🎾 ${m.title}\n${missingPlayers() ? `${faltanText(missingPlayers())}. ` : ''}Marcá cuándo podés y el sistema encuentra el horario:\n${shareUrl(m.id)}`))}">WhatsApp</a>
         </div>
+        <div class="actions" style="margin-top:10px">
+          <button class="btn btn-sm btn-danger" id="hDelete">Eliminar partido</button>
+        </div>
       </div>` : `
       <div class="actions" style="margin-top:14px"><button class="btn btn-sm" id="hCopy">Copiar link</button></div>`}`;
   $('#hCopy').onclick = () => copy(shareUrl(m.id));
+  if ($('#hDelete')) $('#hDelete').onclick = deleteMatch;
+}
+
+async function deleteMatch() {
+  const m = S.data.match;
+  const n = S.data.participants.length;
+  if (!confirm(`¿Eliminar "${m.title}"?\n\nSe borran el partido y ${n === 1 ? 'la respuesta cargada' : `las ${n} respuestas cargadas`}. El link deja de funcionar para todos y no se puede deshacer.`)) return;
+  const btn = $('#hDelete');
+  btn.disabled = true;
+  btn.textContent = 'Eliminando…';
+  try {
+    await api('admin', { method: 'POST', body: JSON.stringify({ id: m.id, k: S.k, action: 'delete' }) });
+    LS.set('goat-org-matches', LS.get('goat-org-matches', []).filter((x) => x.id !== m.id));
+    LS.set(`goat-org-vote-${m.id}`, null);
+    sessionStorage.setItem('goat-org-toast', 'Partido eliminado');
+    location.href = baseUrl();
+  } catch (err) {
+    toast(err.message, true);
+    btn.disabled = false;
+    btn.textContent = 'Eliminar partido';
+  }
 }
 
 // ---------- resultados ----------
@@ -1343,4 +1367,8 @@ if (matchId) {
   renderMatchPage(matchId);
 } else {
   renderCreatePage();
+  try {
+    const t = sessionStorage.getItem('goat-org-toast');
+    if (t) { sessionStorage.removeItem('goat-org-toast'); toast(t); }
+  } catch { /* sin sessionStorage */ }
 }
