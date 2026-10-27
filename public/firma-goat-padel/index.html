@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Firma de correo · GOAT PADEL</title>
+<style>
+  :root{--navy:#182330;--bone:#F2EEE5;--burg:#7C343A;--burg-h:#652A30;--muted:#74716C;--line:#E4E0D7}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bone);color:var(--navy);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+  .wrap{max-width:760px;margin:0 auto;padding:48px 16px 80px}
+  h1{font-size:clamp(1.6rem,4vw,2.2rem);line-height:1.15;margin:0 0 8px;letter-spacing:-.01em}
+  .lead{color:var(--muted);margin:0 0 32px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:28px 20px;overflow-x:auto}
+  .mail-head{font-size:13px;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:22px}
+  .actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:20px 0 40px}
+  button{font:inherit;font-weight:700;border:0;border-radius:6px;padding:14px 22px;cursor:pointer;background:var(--burg);color:#fff;min-height:48px}
+  button:hover{background:var(--burg-h)}
+  button.ghost{background:transparent;color:var(--navy);border:1px solid #C9C4B8}
+  button.ghost:hover{background:#fff}
+  button:focus-visible{outline:3px solid rgba(124,52,58,.35);outline-offset:2px}
+  .ok{font-weight:700;color:#2f6b3a;min-height:1.5em;margin:0}
+  h2{font-size:1.15rem;margin:40px 0 12px}
+  ol{padding-left:20px;margin:0}
+  li{margin:6px 0}
+  .note{font-size:14px;color:var(--muted);border-left:3px solid var(--burg);padding:4px 0 4px 14px;margin-top:24px}
+  code{background:#ECE8DF;padding:2px 6px;border-radius:4px;font-size:.9em}
+  a{color:var(--burg)}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Firma de correo · GOAT PADEL</h1>
+  <p class="lead">Lista para pegar en Gmail. La cabra se anima sola: le da un topetazo al margen, espera 3 segundos y repite.</p>
+
+  <div class="card">
+    <div class="mail-head">Vista previa · así se ve al final de cada mail</div>
+
+    <!-- FIRMA: inicio -->
+    <div id="firma">
+<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse;max-width:520px;">
+  <tr>
+    <td style="padding:0;">
+      <a href="https://goatpadel.com.ar/?utm_source=firma&amp;utm_medium=email" target="_blank" style="text-decoration:none;"><img src="https://www.digitaltie.net/firma-goat-padel/firma-goatpadel-animada.gif" width="520" height="132" alt="El equipo GOAT PADEL · goatpadel.com.ar · hola@goatpadel.com.ar" style="display:block;width:520px;height:auto;max-width:100%;border:0;outline:none;"></a>
+    </td>
+  </tr>
+</table>
+    </div>
+    <!-- FIRMA: fin -->
+  </div>
+
+  <div class="actions">
+    <button type="button" id="copy">Copiar firma</button>
+    <button type="button" class="ghost" id="copy-html">Copiar código HTML</button>
+    <p class="ok" id="ok" role="status" aria-live="polite"></p>
+  </div>
+
+  <h2>Cómo instalarla en Gmail (computadora)</h2>
+  <ol>
+    <li>Tocá <strong>Copiar firma</strong>.</li>
+    <li>En Gmail: ⚙️ <strong>Configuración → Ver toda la configuración</strong>, pestaña <strong>General</strong>.</li>
+    <li>En <strong>Firma</strong> → <strong>Crear nueva</strong>, ponele un nombre y pegá con <code>Ctrl/⌘ + V</code>.</li>
+    <li>Abajo, en <strong>Valores predeterminados de firma</strong>, elegila para mensajes nuevos y respuestas.</li>
+    <li>Tildá <em>“Insertar esta firma antes del texto citado”</em> y <strong>Guardar cambios</strong>.</li>
+  </ol>
+  <p class="note">Toda la firma es una sola imagen animada y al tocarla abre <a href="https://goatpadel.com.ar" target="_blank">goatpadel.com.ar</a>. Se ve animada en Gmail, Apple Mail e iPhone; Outlook de escritorio la muestra completa pero quieta. Versión fija: <a href="firma-goatpadel-estatica.png" target="_blank">firma-goatpadel-estatica.png</a>.</p>
+</main>
+<script>
+  const ok = document.getElementById('ok');
+  const src = document.getElementById('firma');
+  const say = (t) => { ok.textContent = t; setTimeout(() => ok.textContent = '', 4000); };
+  document.getElementById('copy').addEventListener('click', async () => {
+    const html = src.innerHTML.trim();
+    try {
+      await navigator.clipboard.write([new ClipboardItem({
+        'text/html': new Blob([html], { type: 'text/html' }),
+        'text/plain': new Blob(['El equipo GOAT PADEL · goatpadel.com.ar · hola@goatpadel.com.ar'], { type: 'text/plain' }),
+      })]);
+    } catch {
+      const r = document.createRange(); r.selectNodeContents(src);
+      const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      document.execCommand('copy'); s.removeAllRanges();
+    }
+    say('Copiada. Pegala en Gmail → Configuración → Firma.');
+  });
+  document.getElementById('copy-html').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(src.innerHTML.trim()); say('Código HTML copiado.'); }
+    catch { say('No se pudo copiar: seleccioná la firma y copiala a mano.'); }
+  });
+</script>
+</body>
+</html>
