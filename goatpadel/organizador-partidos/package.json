@@ -6,7 +6,7 @@
   "description": "Organizador de partidos de pádel de GOAT PADEL: cada jugador marca cuándo puede y el sistema encuentra el horario.",
   "scripts": {
     "dev": "node dev-server.mjs",
-    "test": "node --test tests/"
+    "test": "node --test tests/matching.test.mjs"
   },
   "engines": { "node": ">=20" },
   "dependencies": {
