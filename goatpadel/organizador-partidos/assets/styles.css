@@ -351,3 +351,13 @@ details.optionals .opt-body { padding: 16px; background: var(--paper); border-ra
 
 .btn-danger { border-color: var(--bordo); color: var(--bordo); background: transparent; }
 .btn-danger:hover { background: var(--bordo-soft); }
+
+/* Al pasar el mouse por el calendario editable, la celda se grisa para mostrar que se puede pintar. */
+@media (hover: hover) and (pointer: fine) {
+  .avgrid .c:not(.h):not(.off) { transition: background-color .08s; }
+  .avgrid .c:not(.h):not(.off).v0:hover,
+  .avgrid .c:not(.h):not(.off):not(.v1):not(.v2):hover { background: #d6d2c9; }
+  .avgrid .c:not(.h):not(.off).v2:hover { background: var(--navy-2); }
+  .avgrid .c:not(.h):not(.off).v1:hover { box-shadow: inset 0 0 0 2px var(--navy-2); }
+  .avgrid .dh[role="button"]:hover { background: #ebe7df; cursor: pointer; }
+}
