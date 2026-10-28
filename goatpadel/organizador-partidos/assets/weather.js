@@ -117,15 +117,35 @@ export function rainPenalty(s) {
 /** Búsqueda de ciudades/barrios para ubicar el club. */
 export async function geocode(q) {
   const url = new URL('https://geocoding-api.open-meteo.com/v1/search');
-  url.search = new URLSearchParams({ name: q, count: '6', language: 'es', format: 'json' });
+  url.search = new URLSearchParams({ name: q, count: '8', language: 'es', format: 'json', countryCode: 'AR' });
   const r = await fetch(url);
   if (!r.ok) return [];
   const data = await r.json();
-  return (data.results || []).map((x) => ({
+  return (data.results || []).filter((x) => x.country_code === 'AR').slice(0, 6).map((x) => ({
     name: [x.name, x.admin2 && x.admin2 !== x.name ? x.admin2 : null, x.admin1, x.country_code === 'AR' ? null : x.country]
       .filter(Boolean)
       .join(', '),
     lat: x.latitude,
     lon: x.longitude,
   }));
+}
+
+/**
+ * Nombre de la ubicación actual (barrio o localidad + provincia) a partir de coordenadas.
+ * Devuelve { name, country } o null si no se pudo averiguar.
+ */
+export async function placeName(lat, lon) {
+  try {
+    const url = new URL('https://api.bigdatacloud.net/data/reverse-geocode-client');
+    url.search = new URLSearchParams({ latitude: lat, longitude: lon, localityLanguage: 'es' });
+    const r = await fetch(url);
+    if (!r.ok) return null;
+    const d = await r.json();
+    const city = d.locality || d.city || '';
+    const prov = (d.principalSubdivision || '').replace(/^Provincia de /, '');
+    const name = [city, prov && prov !== city ? prov : ''].filter(Boolean).join(', ');
+    return { name: name || 'tu ubicación', country: d.countryCode || '' };
+  } catch {
+    return null;
+  }
 }

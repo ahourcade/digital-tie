@@ -1,6 +1,6 @@
 // Organizador de partidos GOAT PADEL — interfaz.
 import { analyze, hhmm, slotsCount } from './matching.js';
-import { loadWeather, summarize, rainPenalty, geocode, hourly, SKY_LABEL, KMH_TO_KNOTS } from './weather.js';
+import { loadWeather, summarize, rainPenalty, geocode, placeName, hourly, SKY_LABEL, KMH_TO_KNOTS } from './weather.js';
 import { skyIcon } from './icons.js';
 
 const CFG = {
@@ -217,6 +217,11 @@ const waLink = (text) => `https://wa.me/?text=${encodeURIComponent(text)}`;
 // =====================================================================
 // CREAR PARTIDO
 // =====================================================================
+/** Texto bajo el campo de zona según de dónde salió. */
+const placeMsg = (p) => (p.geo
+  ? `<span class="place-ok">✓ Ubicación confirmada: <b>${esc(p.name)}</b></span>`
+  : `Clima para: <b>${esc(p.name)}</b>`);
+
 function renderCreatePage() {
   document.title = 'Organizador de partidos · GOAT PADEL';
   const today = todayAR();
@@ -282,12 +287,12 @@ function renderCreatePage() {
         <div class="field">
           <label for="fPlace">¿Dónde se juega? <span class="muted">(zona o ciudad del club)</span></label>
           <div class="share-box">
-            <input id="fPlace" type="text" maxlength="60" placeholder="Ej.: Pilar" value="${esc(lastPlace?.name || '')}" autocomplete="off" required />
+            <input id="fPlace" type="text" maxlength="60" placeholder="Ej.: Pilar" value="${esc(lastPlace && !lastPlace.geo ? lastPlace.name : '')}" autocomplete="off" required />
             <button type="button" class="btn btn-sm" id="fPlaceBtn">Buscar</button>
           </div>
           <div class="geo-results" id="fPlaceRes"></div>
           <button type="button" class="link-btn" id="fGeoMe" style="justify-self:start">Usar mi ubicación actual</button>
-          <span class="hint" id="fPlaceSel">${lastPlace ? `Clima para: <b>${esc(lastPlace.name)}</b>` : 'La usamos para mostrar el pronóstico de cada horario.'}</span>
+          <span class="hint" id="fPlaceSel">${lastPlace ? placeMsg(lastPlace) : 'Solo Argentina. La usamos para mostrar el pronóstico de cada horario.'}</span>
         </div>
         <label class="check" style="margin-bottom:16px"><input type="checkbox" id="fCovered" /> <span>Cancha techada <span class="muted">(la lluvia no cuenta para elegir horario)</span></span></label>
 
@@ -392,8 +397,9 @@ function renderCreatePage() {
     place = p;
     LS.set('goat-org-place', p);
     $('#fPlaceRes').innerHTML = '';
-    $('#fPlace').value = p.name;
-    $('#fPlaceSel').innerHTML = `Clima para: <b>${esc(p.name)}</b>`;
+    // Con "usar mi ubicación" el campo queda vacío: la confirmación va abajo, así nadie cree que falta tocar "Buscar".
+    $('#fPlace').value = p.geo ? '' : p.name;
+    $('#fPlaceSel').innerHTML = placeMsg(p);
   };
   const doGeo = async () => {
     const q = $('#fPlace').value.trim();
@@ -417,17 +423,32 @@ function renderCreatePage() {
     if (e.key === 'Enter') { e.preventDefault(); doGeo(); }
   });
   $('#fPlace').addEventListener('input', () => {
-    if (place && $('#fPlace').value.trim() !== place.name) {
+    const v = $('#fPlace').value.trim();
+    if (place && (place.geo ? v !== '' : v !== place.name)) {
       place = null;
       $('#fPlaceSel').textContent = 'Tocá "Buscar" y elegí la zona.';
     }
   });
   $('#fGeoMe').addEventListener('click', () => {
     if (!navigator.geolocation) return toast('Tu navegador no comparte ubicación', true);
+    const btn = $('#fGeoMe');
+    btn.textContent = 'Buscando tu ubicación…';
     navigator.geolocation.getCurrentPosition(
-      (pos) => setPlace({ name: 'Mi ubicación', lat: pos.coords.latitude, lon: pos.coords.longitude }),
-      () => toast('No pudimos obtener tu ubicación', true),
-      { timeout: 8000 },
+      async (pos) => {
+        const { latitude: lat, longitude: lon } = pos.coords;
+        const info = await placeName(lat, lon);
+        btn.textContent = 'Usar mi ubicación actual';
+        if (info?.country && info.country !== 'AR') {
+          $('#fPlaceSel').textContent = 'Por ahora solo funciona para canchas en Argentina.';
+          return toast('Tu ubicación está fuera de Argentina', true);
+        }
+        setPlace({ name: info?.name || 'tu ubicación actual', lat, lon, geo: true });
+      },
+      () => {
+        btn.textContent = 'Usar mi ubicación actual';
+        toast('No pudimos obtener tu ubicación. Escribí la zona.', true);
+      },
+      { timeout: 10000 },
     );
   });
 
